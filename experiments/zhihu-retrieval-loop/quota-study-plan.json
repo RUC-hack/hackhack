@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "study_id": "quota-paired-v1",
+  "assumptions": {
+    "observed_successful_calls_before_block": 10,
+    "official_reset_window_known": false,
+    "calls_budgeted_per_window": 8,
+    "calls_reserved_per_window": 2,
+    "delay_ms_between_calls": 15000,
+    "stop_on_first_rate_limit": true
+  },
+  "existing_pilot": {
+    "run_file": "runs/zhihu-oracle-2026-09-04T13-36-23-657Z.jsonl",
+    "successful_queries": 10,
+    "returned_items": 100,
+    "covered_case_ids": ["C01", "C03", "C05", "C06", "C07", "C08"],
+    "use": "offline_quality_gate_and_oracle_context"
+  },
+  "paired_stage": {
+    "case_ids": ["C01", "C03", "C05", "C07"],
+    "conditions": ["baseline", "generated"],
+    "queries_per_case_per_condition": 1,
+    "count_per_call": 10,
+    "schedule": [
+      { "position": 1, "task_id": "C01:generated", "case_id": "C01", "condition": "generated" },
+      { "position": 2, "task_id": "C03:baseline", "case_id": "C03", "condition": "baseline" },
+      { "position": 3, "task_id": "C05:generated", "case_id": "C05", "condition": "generated" },
+      { "position": 4, "task_id": "C07:baseline", "case_id": "C07", "condition": "baseline" },
+      { "position": 5, "task_id": "C01:baseline", "case_id": "C01", "condition": "baseline" },
+      { "position": 6, "task_id": "C03:generated", "case_id": "C03", "condition": "generated" },
+      { "position": 7, "task_id": "C05:baseline", "case_id": "C05", "condition": "baseline" },
+      { "position": 8, "task_id": "C07:generated", "case_id": "C07", "condition": "generated" }
+    ]
+  },
+  "primary_quality_gate": {
+    "top_k": 5,
+    "minimum_cases_with_two_usable_generated_sources": 3,
+    "minimum_cases_generated_not_worse_than_baseline": 3,
+    "minimum_overall_generated_usable_precision_at_5": 0.5
+  },
+  "reporting_rules": [
+    "Rate-limited rows are reported separately and are not treated as relevance failures.",
+    "No population-level significance claim is made from four paired cases.",
+    "Only frozen successful responses enter manual quality evaluation.",
+    "The two unused calls are not spent merely because they are available."
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "status": "not_configured",
+  "mode": "dry-run",
+  "liveExternalCallsAllowed": false,
+  "providers": {
+    "deepseek": {
+      "configured": false,
+      "lastCheckedAt": null,
+      "lastErrorCode": null
+    },
+    "zhihu": {
+      "configured": false,
+      "lastCheckedAt": null,
+      "lastErrorCode": null
+    }
+  },
+  "lastRun": null,
+  "updatedAt": null
+}

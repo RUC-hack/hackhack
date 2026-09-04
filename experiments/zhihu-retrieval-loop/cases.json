@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "cases": [
+    {
+      "id": "C01",
+      "user_input": "我是大三计算机学生，家庭经济压力不大，喜欢研究，但担心读研后仍然找不到理想工作。我不知道应该考研还是直接就业。",
+      "decision": "考研或直接就业",
+      "oracle_queries": [
+        {"id": "q1", "facet": "path_work", "query": "计算机本科直接工作三年后体验"},
+        {"id": "q2", "facet": "path_grad", "query": "计算机读研后就业真实体验"},
+        {"id": "q3", "facet": "regret_work", "query": "本科直接工作后悔没读研吗"},
+        {"id": "q4", "facet": "regret_grad", "query": "计算机读研后悔转行经历"}
+      ]
+    },
+    {
+      "id": "C02",
+      "user_input": "我是普通院校金融专业大四学生，父母希望我考公，我更想去互联网做运营，但担心工作不稳定，也担心让父母失望。",
+      "decision": "考公或进入互联网行业",
+      "oracle_queries": [
+        {"id": "q1", "facet": "path_civil", "query": "金融专业毕业考公真实体验"},
+        {"id": "q2", "facet": "path_internet", "query": "金融专业转互联网运营经历"},
+        {"id": "q3", "facet": "switch", "query": "互联网工作后辞职考公经历"},
+        {"id": "q4", "facet": "family", "query": "父母希望考公自己不想怎么办 经历"}
+      ]
+    },
+    {
+      "id": "C03",
+      "user_input": "我拿到了北京互联网公司的 offer，也有机会回家乡银行。北京成长快但压力大，家乡稳定且离家近，我不知道该选哪个。",
+      "decision": "北京互联网公司或家乡银行",
+      "oracle_queries": [
+        {"id": "q1", "facet": "path_beijing", "query": "毕业去北京互联网工作真实生活"},
+        {"id": "q2", "facet": "path_hometown", "query": "大学毕业回家乡银行工作体验"},
+        {"id": "q3", "facet": "return", "query": "北京互联网辞职回家乡经历"},
+        {"id": "q4", "facet": "regret", "query": "毕业留在家乡后来后悔吗"}
+      ]
+    },
+    {
+      "id": "C04",
+      "user_input": "我本科毕业工作两年了，对现在的岗位不满意，想辞职考研换方向，但担心脱产一年失败后更加被动。",
+      "decision": "继续工作或辞职考研",
+      "oracle_queries": [
+        {"id": "q1", "facet": "part_time", "query": "工作两年在职考研真实经历"},
+        {"id": "q2", "facet": "quit", "query": "工作后辞职考研成功经历"},
+        {"id": "q3", "facet": "after_grad", "query": "工作几年后读研值得吗 亲身经历"},
+        {"id": "q4", "facet": "failure", "query": "辞职考研失败后来怎么样"}
+      ]
+    },
+    {
+      "id": "C05",
+      "user_input": "我可以保研本专业，但越来越不喜欢现在的方向，也想跨专业申请。放弃保研风险很大，我不知道该不该换。",
+      "decision": "本专业保研或跨专业申请",
+      "oracle_queries": [
+        {"id": "q1", "facet": "stay", "query": "保研本专业后悔经历"},
+        {"id": "q2", "facet": "switch", "query": "跨专业读研真实体验"},
+        {"id": "q3", "facet": "give_up", "query": "放弃保研跨专业后来怎么样"},
+        {"id": "q4", "facet": "mismatch", "query": "研究生发现不喜欢研究方向怎么办 经历"}
+      ]
+    },
+    {
+      "id": "C06",
+      "user_input": "我是理工科硕士，导师希望我继续读博，我也喜欢研究，但对长期低收入和毕业不确定性感到焦虑。",
+      "decision": "继续读博或进入行业",
+      "oracle_queries": [
+        {"id": "q1", "facet": "phd", "query": "理工科读博真实生活后悔吗"},
+        {"id": "q2", "facet": "industry", "query": "理工科硕士毕业进企业经历"},
+        {"id": "q3", "facet": "switch", "query": "博士毕业转行进入企业体验"},
+        {"id": "q4", "facet": "exit", "query": "博士中途退学后来怎么样"}
+      ]
+    },
+    {
+      "id": "C07",
+      "user_input": "我第一次考研失败，分数差得不多。现在可以二战，也可以先找工作，但我害怕再失败一年。",
+      "decision": "考研二战或先工作",
+      "oracle_queries": [
+        {"id": "q1", "facet": "retry_success", "query": "考研二战成功真实经历"},
+        {"id": "q2", "facet": "retry_failure", "query": "考研二战失败后来怎么样"},
+        {"id": "q3", "facet": "work", "query": "考研失败放弃二战直接工作经历"},
+        {"id": "q4", "facet": "later", "query": "工作后重新考研成功经历"}
+      ]
+    },
+    {
+      "id": "C08",
+      "user_input": "我在考虑出国读硕士还是在国内读研。国外成本高但可能开阔视野，国内更熟悉，我担心投入和回报不匹配。",
+      "decision": "出国读硕士或国内读研",
+      "oracle_queries": [
+        {"id": "q1", "facet": "abroad", "query": "出国读硕士真实体验值得吗"},
+        {"id": "q2", "facet": "domestic", "query": "国内读研三年真实体验"},
+        {"id": "q3", "facet": "return", "query": "海外硕士回国就业真实经历"},
+        {"id": "q4", "facet": "cost", "query": "留学花费很高后来后悔吗"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "prompt_version": "fixture-only-not-for-study",
+  "model": "fixture",
+  "temperature": 0,
+  "cases": [
+    {
+      "case_id": "C01",
+      "decision_frame": "测试",
+      "queries": [{ "id": "generated", "facet": "high_yield", "query": "C01 测试查询" }]
+    },
+    {
+      "case_id": "C03",
+      "decision_frame": "测试",
+      "queries": [{ "id": "generated", "facet": "high_yield", "query": "C03 测试查询" }]
+    },
+    {
+      "case_id": "C05",
+      "decision_frame": "测试",
+      "queries": [{ "id": "generated", "facet": "high_yield", "query": "C05 测试查询" }]
+    },
+    {
+      "case_id": "C07",
+      "decision_frame": "测试",
+      "queries": [{ "id": "generated", "facet": "high_yield", "query": "C07 测试查询" }]
+    }
+  ]
+}

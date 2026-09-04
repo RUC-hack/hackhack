@@ -1,0 +1,11 @@
+{
+  "name": "hackhack-life-experience-retrieval",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "test:zhihu": "node --test tests/unit/zhihu-search-client.test.mjs tests/unit/zhihu-provider.test.mjs",
+    "experiment:zhihu": "node experiments/zhihu-retrieval-loop/run-experiment.mjs"
+  }
+}

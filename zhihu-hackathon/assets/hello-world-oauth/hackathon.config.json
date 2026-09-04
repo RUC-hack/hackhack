@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "projectName": "__PROJECT_NAME__",
+  "projectSlug": "template-oauth",
+  "oauth": {
+    "enabled": true,
+    "appId": "0",
+    "redirectUri": null,
+    "credentialService": "zhihu-hackathon:template-oauth",
+    "credentialAccount": "oauth-app-key"
+  },
+  "host": "127.0.0.1",
+  "port": 4173
+}
