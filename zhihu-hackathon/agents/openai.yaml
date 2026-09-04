@@ -1,0 +1,4 @@
+interface:
+  display_name: "知乎黑客松项目初始化"
+  short_description: "先询问 OAuth 选择，再生成对应 Hello World 项目"
+  default_prompt: "Use $zhihu-hackathon to explain the OAuth option and initialize the matching Zhihu hackathon Hello World project."

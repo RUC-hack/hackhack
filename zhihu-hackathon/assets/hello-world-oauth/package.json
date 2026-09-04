@@ -1,0 +1,12 @@
+{
+  "name": "zhihu-hackathon-oauth-hello-world",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check server.mjs && node --check lib/oauth.mjs && node --check public/app.js",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": { "node": ">=22" }
+}

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>__PROJECT_NAME__ · 知乎 OAuth Hello World</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <header><span>知乎黑客松</span><b id="runtime">正在检查环境</b></header>
+      <section class="hero">
+        <p class="eyebrow">ZHIHU ACCOUNT / OAUTH</p>
+        <h1>知乎 OAuth<br />Hello World</h1>
+        <p>连接你的知乎账号，然后用登录账号各读取一条创作、关注和收藏数据。</p>
+      </section>
+      <section class="account">
+        <div class="account-title"><span>账号授权状态</span><b id="status">检查中</b></div>
+        <div class="identity"><div id="avatar-placeholder">知</div><img id="avatar" alt="知乎头像" hidden /><div><strong id="name">尚未连接知乎账号</strong><p id="headline">完成授权后显示公开账号信息</p></div></div>
+        <div class="meta"><span>App ID：<b id="app-id">-</b></span><span id="redirect-uri">-</span></div>
+        <p class="message" id="message"></p>
+        <pre class="debug" id="debug" hidden></pre>
+        <div class="actions"><button id="login">授权知乎账号</button><button class="secondary" id="refresh" hidden>重新请求用户数据</button><button class="secondary danger" id="logout" hidden>退出本次授权</button></div>
+      </section>
+      <aside>本地地址只能预览页面，无法完成知乎登录。请先部署到 Cloudflare、Sealos 等平台，再使用公网地址测试。</aside>
+      <section id="results" hidden><div class="results-title"><h2>OAuth 用户接口</h2><span id="summary">等待请求</span></div><div class="grid" id="grid"></div></section>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

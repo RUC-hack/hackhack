@@ -1,0 +1,16 @@
+:root {
+  /* ADS: Text/02A 主标题 MapText02A */ --text-primary: #121212;
+  /* ADS: Text/04A 次级文本 MapText04A */ --text-secondary: #646464;
+  /* ADS: Blue/品牌蓝 MapBrand */ --brand: #1772f6;
+  /* ADS: Frame/99A 页面白背景 MapUIFrame99A */ --page: #ffffff;
+  /* ADS: Frame/10C 页面灰背景 MapUIFrame10C */ --muted: #f6f6f6;
+  /* ADS: Frame/09A 浅色分割线1 MapUIFrame09A */ --line: #ebebeb;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; color: var(--text-primary); background: var(--muted); font-family: "Noto Sans SC"; }
+main { margin: 0 auto; max-width: 760px; padding: 15vh 24px 64px; }
+.brand { color: var(--brand); font-size: 13px; font-weight: 700; letter-spacing: .1em; }
+h1 { font-size: clamp(52px, 10vw, 92px); letter-spacing: -.06em; margin: 20px 0 10px; }
+main > p { color: var(--text-secondary); font-size: 18px; }
+section { background: var(--page); border: 1px solid var(--line); border-radius: 18px; margin-top: 48px; padding: 24px; }
+section p { color: var(--text-secondary); line-height: 1.7; margin: 8px 0 0; }
