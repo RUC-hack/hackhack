@@ -2,7 +2,6 @@ node_modules/
 .env
 .env.*
 !.env.example
-.zhihu-publish-output/
 *.log
 .DS_Store
 Thumbs.db
