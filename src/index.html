@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#173d35">
+  <title>见众｜我们这样的人</title>
+  <meta name="description" content="见众是一套基于相似人生轨迹的 AI 自我认识与人生参照系统：从别人的人生里，看见自己的坐标。">
+  <meta name="keywords" content="见众,我们这样的人,相似人生,人生轨迹,自我认识,人生参照,选择焦虑">
+  <meta property="og:title" content="见众｜我们这样的人">
+  <meta property="og:description" content="像我这样的人，可以怎样活？在相似人生中，看见自己的坐标。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1600&q=82&auto=format&fit=crop">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳至正文</a>
+  <header class="site-header" id="site-header">
+    <nav class="nav-shell" aria-label="主要导航">
+      <a class="brand" href="#top" aria-label="见众首页">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>见众</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-label="打开导航菜单" aria-expanded="false" aria-controls="nav-links">
+        <span></span><span></span>
+      </button>
+      <div class="nav-links" id="nav-links">
+        <a href="#question">为什么</a>
+        <a href="#framework">四个空间</a>
+        <a href="#trajectories">相似人生</a>
+        <a href="#rehearsal">人生预演</a>
+        <a href="#map">长期地图</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="hero-wrapper">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-bg" data-image-target="hero" aria-hidden="true"></div>
+        <div class="hero-noise"></div>
+        <div class="hero-content">
+          <p class="eyebrow hero-eyebrow fade-up">JIANZHONG · LIFE REFERENCE SYSTEM</p>
+          <h1 id="hero-title" class="fade-up delay-1">我们这样的人<span>原来有很多。</span></h1>
+          <p class="hero-lead fade-up delay-2">把孤立的“我怎么了”，变成<br>“原来我们这样的人，会这样”。</p>
+          <div class="hero-actions fade-up delay-3">
+            <a class="button button-light" href="#question">进入策展叙事 <span aria-hidden="true">↓</span></a>
+            <a class="text-link light" href="#framework">认识见众 <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+        <div class="hero-index" aria-hidden="true"><span>01</span><span class="line"></span><span>06</span></div>
+        <p class="photo-credit" data-credit-for="hero"></p>
+      </section>
+    </div>
+
+    <section class="section opening" id="question">
+      <div class="container narrow">
+        <p class="eyebrow fade-up">01 · THE QUESTION</p>
+        <h2 class="display-question fade-up">你有没有怀疑过：<br><em>是不是只有我</em>活得这么乱？</h2>
+        <div class="opening-grid">
+          <p class="lead-copy fade-up">一个人为什么会焦虑？很多时候，因为他只能看见自己的这一条人生。</p>
+          <div class="anxieties fade-up delay-1" aria-label="常见的人生焦虑">
+            <span>不知道该考研还是工作</span>
+            <span>看到同龄人成功会焦虑</span>
+            <span>很怕走错一步</span>
+            <span>已经很努力，还是觉得不够好</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="constellation" aria-label="从一个人到一群人">
+      <canvas id="constellation-canvas" aria-hidden="true"></canvas>
+      <div class="constellation-copy fade-up">
+        <p>今天，大多数 AI 都在回答</p>
+        <h2>“我应该怎么选？”</h2>
+        <p>见众想回答另一个问题</p>
+        <blockquote>“像我这样的人，<br>后来都去了哪里？”</blockquote>
+      </div>
+    </section>
+
+    <section class="section framework" id="framework">
+      <div class="container">
+        <header class="section-heading fade-up">
+          <div><p class="eyebrow">02 · THE SYSTEM</p><h2>一套人生参照系</h2></div>
+          <p>见众不是替你做决定。它从自我画像出发，让孤立的个人经验进入一组可观察、可比较、可反思的相似人生。</p>
+        </header>
+        <div class="framework-grid" id="framework-grid"></div>
+      </div>
+    </section>
+
+    <section class="image-break" data-image-target="crowd" aria-label="群体人生参照">
+      <div class="image-break-panel fade-up">
+        <p class="eyebrow">COLLECTIVE REFERENCE</p>
+        <blockquote>人生不是只有“建议”，<br>人生还可以有“样本”。</blockquote>
+        <p>当我们看见彼此，人生就第一次有了参照。</p>
+      </div>
+      <p class="photo-credit" data-credit-for="crowd"></p>
+    </section>
+
+    <section class="section trajectories" id="trajectories">
+      <div class="container">
+        <header class="section-heading fade-up">
+          <div><p class="eyebrow">03 · SIMILAR LIVES</p><h2>不是人物故事，<br>而是人生轨迹</h2></div>
+          <p>每条人生都被压缩为起点、选择、代价、转折与后来。历史人物、公开经历与同时代样本，由此进入同一种观察语言。</p>
+        </header>
+        <div class="trajectory-layout">
+          <figure class="editorial-figure fade-up">
+            <img src="https://images.unsplash.com/photo-1788119117647-c5d2a76593dd?auto=format&amp;fit=crop&amp;w=900&amp;q=82" data-image-target="portrait" alt="一辆 SUV 行驶在美国犹他州红岩荒漠的蜿蜒公路上" width="900" height="506" loading="lazy">
+            <figcaption><span>每一条路，都有自己的生活质感</span><span data-credit-for="portrait"></span></figcaption>
+          </figure>
+          <div class="trajectory-list" id="trajectory-list"></div>
+        </div>
+        <p class="content-note fade-up">轨迹内容为原方案提出的展示结构，不代表真实个案；正式产品须基于经授权或公开可用的人生样本建立资料库。</p>
+      </div>
+    </section>
+
+    <section class="section rehearsal" id="rehearsal">
+      <div class="container">
+        <header class="section-heading fade-up">
+          <div><p class="eyebrow">04 · LIFE REHEARSAL</p><h2>预演生活的质感，<br>而不是预测成功率</h2></div>
+          <p>“未选择人生”被重新定义为人生预演：比较每条路径要承担的日常、代价与时间尺度。</p>
+        </header>
+        <div class="rehearsal-tabs fade-up" role="tablist" aria-label="人生预演路径">
+          <button role="tab" aria-selected="true" data-path="study">如果继续读书</button>
+          <button role="tab" aria-selected="false" data-path="work">如果进入工作</button>
+          <button role="tab" aria-selected="false" data-path="pause">如果暂时不选</button>
+        </div>
+        <article class="rehearsal-panel fade-up" id="rehearsal-panel" aria-live="polite"></article>
+      </div>
+    </section>
+
+    <section class="timepiece" aria-label="人生没有统一时间表" data-image-target="road">
+      <div class="timepiece-overlay"></div>
+      <div class="timepiece-content fade-up">
+        <p class="eyebrow">A DIFFERENT SCALE OF TIME</p>
+        <h2>人生不存在<br>统一时间表。</h2>
+        <p>有人很早确定方向，有人后来转向，也有人学会带着犹豫生活。混乱也许不是异常，而是一个阶段。</p>
+      </div>
+      <p class="photo-credit" data-credit-for="road"></p>
+    </section>
+
+    <section class="section map-section" id="map">
+      <div class="container">
+        <div class="map-grid">
+          <div class="map-copy fade-up">
+            <p class="eyebrow">05 · A LIVING MAP</p>
+            <h2>一张会随着你长大的人生地图</h2>
+            <p>系统记录重要选择，也重新打开过去的焦虑。多年以后，用户可以看见哪些事情真正改变了人生，哪些曾以为无法承受的事，后来已经失去重量。</p>
+            <div class="map-quote">“我依然不知道人生答案，<br>但我知道自己在哪里。”</div>
+          </div>
+          <div class="timeline fade-up delay-1" id="timeline"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing section" data-image-target="closing" aria-label="我们这样的人，一同走过">
+      <div class="container narrow fade-up">
+        <p class="eyebrow">06 · TOGETHER</p>
+        <h2>有人和你一样慢，<br>一样怕，一样犹豫。</h2>
+        <p>也有人已经从这里走过去了。</p>
+        <a class="button button-dark" href="#top">重新观看 <span aria-hidden="true">↑</span></a>
+      </div>
+      <p class="photo-credit" data-credit-for="closing"></p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div><a class="brand footer-brand" href="#top"><span class="brand-mark"><i></i><i></i><i></i></span><span>见众</span></a><p>基于相似人生轨迹的 AI 自我认识与人生参照系统。</p></div>
+      <nav aria-label="页脚导航"><a href="#question">为什么</a><a href="#framework">四个空间</a><a href="#trajectories">相似人生</a><a href="#rehearsal">人生预演</a></nav>
+      <div class="credits"><p>影像来源</p><div id="all-credits">Unsplash 摄影作品</div></div>
+    </div>
+    <div class="container footer-bottom"><span>© 2026 见众 · 概念演示</span><a href="#top">返回顶部 ↑</a></div>
+  </footer>
+
+  <script>window.APP_CONFIG = { unsplashAccessKey: "" };</script>
+  <script src="app.js"></script>
+</body>
+</html>
