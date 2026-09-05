@@ -7,7 +7,7 @@
 @media(max-width:600px){.qa-results-hero{padding:105px 0 86px}.qa-results-hero h2{font-size:38px}.qa-results-hero .journey-results-intro{margin-top:32px}.qa-results-paths,.qa-results-people{padding:85px 0}.qa-results .journey-path{grid-template-columns:50px 1fr;padding:28px 0}.qa-results .journey-path:hover,.qa-results .journey-path[aria-current="true"]{padding-left:12px;padding-right:12px}.qa-results .journey-path-people{grid-column:2;justify-content:flex-start;padding:22px 0 0 8px}.qa-results .journey-path-copy{padding:0}.qa-results .journey-people-layout{gap:32px}.qa-results .journey-person-detail{padding:28px 20px}.qa-detail-person{width:84px;height:100px}}
 @media(prefers-reduced-motion:reduce){.qa-results.is-visible .qa-results-hero,.qa-results.is-visible .qa-results-paths,.qa-results.is-visible .qa-results-people{animation:none}}
 
-/* 加载仪式沿用 staging_src 的人群流动动画，人物本体换成本地 SVG。 */
+/* 加载仪式沿用前端 A 的人群流动语言，人物本体换成本地 SVG。 */
 .qa-crowd-stream .qa-people-track{left:-12%;width:124%;height:112px;gap:clamp(50px,7vw,120px)}
 .qa-crowd-stream .qa-people-track:nth-child(1){top:5%;animation:journey-drift-left 22s linear infinite;opacity:.24}
 .qa-crowd-stream .qa-people-track:nth-child(2){top:35%;animation:journey-drift-right 28s linear infinite;opacity:.48}
@@ -24,3 +24,136 @@
 @media(max-width:1050px){.qa-search-ritual{min-height:620px}.qa-search-copy{max-width:68%}.qa-crowd-stream{right:-8%;width:38%;opacity:.34}.qa-analysis{grid-template-columns:1fr}.qa-analysis-stage{min-height:82px;padding:13px 0}.qa-analysis-stage p{max-width:430px}.qa-search-ritual h2{font-size:clamp(38px,5vw,54px)}}
 @media(max-width:720px){.qa-conversation.is-searching{width:calc(100% - 28px)}.qa-search-ritual{min-height:690px;padding:42px 8px 205px}.qa-search-copy{max-width:none;min-height:440px}.qa-search-ritual h2{font-size:clamp(34px,10vw,46px);margin-bottom:32px}.qa-analysis{gap:0}.qa-analysis-stage{min-height:78px}.qa-crowd-stream{left:0;right:0;top:auto;bottom:-10px;width:100%;height:180px;opacity:.25;mask-image:linear-gradient(to bottom,transparent 0,#000 28%,#000 86%,transparent 100%)}.qa-crowd-stream .qa-people-track:nth-child(1){top:2%}.qa-crowd-stream .qa-people-track:nth-child(2){top:48%}.qa-crowd-stream .qa-people-track:nth-child(3){display:none}.qa-search-result{margin-top:24px}}
 .qa-search-ritual:before{background:radial-gradient(circle at 83% 28%,rgba(168,102,66,.07),transparent 21%),radial-gradient(circle at 76% 56%,rgba(32,37,34,.035),transparent 28%),linear-gradient(180deg,#fbfaf7 0%,#f6f5f1 100%)}.qa-search-result.is-found{color:var(--accent)}
+
+/* A → B 迁移补充：模式边界、完整回答字段、来源失败和本机收藏。 */
+.qa-intro-note{grid-column:2;max-width:560px;margin:0 0 8px;color:var(--muted);font-size:14px}.qa-intro-note>p{margin:0}.qa-mode-badge{display:inline-flex!important;width:max-content;max-width:100%;margin-top:16px!important;padding:7px 10px;border:1px solid rgba(168,102,66,.3);background:rgba(255,255,255,.55);color:var(--accent);font-size:10px;letter-spacing:.06em}.qa-mode-badge[data-mode="live"]{border-color:rgba(23,61,53,.24);color:var(--primary)}.qa-answer-note{margin-top:18px;padding:16px;background:#f6f3ec;color:var(--muted);font-size:12px;overflow-wrap:anywhere}.qa-answer-note strong{display:block;margin-bottom:8px;color:var(--primary);font-weight:500}.qa-answer-note ul{margin:0;padding-left:19px}.qa-answer-note li+li{margin-top:5px}.qa-sources .qa-source-unavailable{font-size:11px;color:#8b5c4e;overflow-wrap:anywhere}.journey-person-select.is-unavailable{opacity:.62}.qa-favorite-note{margin:12px 0 0;color:var(--muted);font-size:10px}.qa-results-hero{background-image:url("assets/images/road.jpg");background-size:cover;background-position:center}.qa-answer-context{padding:110px 0 130px;background:#f6f3ec}.qa-context-heading{display:grid;grid-template-columns:1fr 2fr;gap:30px;margin-bottom:48px}.qa-context-heading h2{margin:0;font:600 clamp(36px,4vw,58px)/1.25 var(--serif);letter-spacing:-.04em}.qa-context-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}.qa-context-card{min-width:0;padding:30px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(255,255,255,.56)}.qa-context-description{margin:0 0 9px;color:var(--accent);font-size:10px;letter-spacing:.08em;text-transform:uppercase}.qa-context-card h3{margin:0 0 18px;font:600 24px var(--serif)}.qa-context-card ul{margin:0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.8}.qa-context-card li+li{margin-top:8px}
+@media(max-width:900px){.qa-intro-note{grid-column:1}.qa-context-heading{grid-template-columns:1fr}.qa-context-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.qa-answer-context{padding:80px 0}.qa-context-card{padding:24px 20px}.qa-mode-badge{width:auto}}
+
+/* 页面编排：a → b → c 是按钮推进的独立页面；c → d → e 属于同一结果长页。 */
+.qa-page-progress{margin-left:auto;color:var(--muted);font-size:11px;letter-spacing:.2em;font-variant-numeric:tabular-nums}
+.qa-result-nav,.qa-header-reset{display:none}
+.qa-header-reset{margin-left:30px;padding:5px 0;border:0;border-bottom:1px solid transparent;background:transparent;color:var(--muted);font-size:12px;letter-spacing:.12em;cursor:pointer}
+.qa-header-reset:hover{border-bottom-color:currentColor;color:var(--ink)}
+.qa-page[data-qa-view="results"] .qa-page-progress{display:none}
+.qa-page[data-qa-view="results"] .qa-result-nav{display:flex;margin-left:auto}
+.qa-page[data-qa-view="results"] .qa-header-reset{display:block}
+.qa-page[data-qa-view="question"] .menu-toggle,.qa-page[data-qa-view="processing"] .menu-toggle,.qa-page[data-qa-view="dialogue"] .menu-toggle{display:none!important}
+.qa-page:not([data-qa-view="results"]) .qa-footer{display:none}
+
+.qa-page[data-qa-view="question"] .qa-main{padding:0}
+.qa-question-page{min-height:100svh;padding:clamp(116px,14vh,158px) max(48px,7vw) clamp(44px,6vh,74px);display:grid;grid-template-columns:minmax(310px,.82fr) minmax(480px,1.18fr);gap:clamp(58px,10vw,170px);align-items:center;background:#fff}
+.qa-question-page .qa-intro,.qa-question-page .qa-workspace{width:auto;margin:0}
+.qa-question-page .qa-intro-copy{display:block;width:auto;margin:0}
+.qa-question-page .qa-intro-copy .eyebrow{margin-bottom:clamp(36px,7vh,76px)}
+.qa-question-page .qa-intro h1{margin:0;font-size:clamp(58px,6vw,94px);line-height:1.42;letter-spacing:-.065em}
+.qa-question-page .qa-intro h1 em{color:inherit}
+.qa-question-page .qa-intro-note{margin:clamp(28px,5vh,52px) 0 0;max-width:440px;font-size:13px}
+.qa-question-page .qa-workspace{display:block}
+.qa-question-page .qa-guide,.qa-question-page .qa-card-heading,.qa-question-page .qa-label{display:none}
+.qa-question-page .qa-start-card{padding:0;border-top:1px solid var(--ink);border-bottom:0}
+.qa-question-page .qa-start-card textarea{min-height:clamp(260px,38vh,430px);padding:clamp(30px,5vh,54px) 2px 22px;border-top:0;font:400 clamp(25px,2.5vw,39px)/1.75 var(--serif)}
+.qa-question-page .qa-form-footer{margin:22px 0 0}
+
+.qa-page[data-qa-view="processing"] .qa-main,.qa-page[data-qa-view="dialogue"] .qa-main,.qa-page[data-qa-view="results"] .qa-main{padding:78px 0 0}
+.qa-page[data-qa-view="processing"] .qa-conversation{width:100%;max-width:none;min-height:calc(100svh - 78px);margin:0}
+.qa-page[data-qa-view="processing"] .qa-search-ritual{min-height:calc(100svh - 78px);padding:clamp(68px,9vh,112px) max(48px,7vw) 46px;border-top:0}
+.qa-page[data-qa-view="processing"] .qa-search-copy{min-height:calc(100svh - 238px)}
+.qa-page[data-qa-view="dialogue"] .qa-conversation{min-height:calc(100svh - 78px);margin:0 auto;padding-top:clamp(72px,10vh,120px);padding-bottom:72px}
+.qa-page[data-qa-view="dialogue"] .qa-dialogue{animation:qa-page-enter .45s cubic-bezier(.22,1,.36,1) both}
+.qa-page[data-qa-view="results"] .qa-results-hero{min-height:calc(100svh - 78px);display:flex;align-items:center;padding-top:72px;padding-bottom:72px}
+.qa-page[data-qa-view="results"] .qa-results-paths,.qa-page[data-qa-view="results"] .qa-results-people,.qa-page[data-qa-view="results"] .qa-answer-context{scroll-margin-top:78px}
+@keyframes qa-page-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+@media(max-width:900px){
+  .qa-page[data-qa-view="results"] .menu-toggle{display:block}
+  .qa-page[data-qa-view="results"] .qa-result-nav{margin-left:0}
+  .qa-page[data-qa-view="results"] .qa-header-reset{margin-left:auto;margin-right:14px}
+  .qa-question-page{grid-template-columns:minmax(260px,.72fr) minmax(430px,1.28fr);gap:54px;padding-left:42px;padding-right:42px}
+  .qa-question-page .qa-intro h1{font-size:clamp(48px,6.7vw,72px)}
+}
+@media(max-width:760px){
+  .qa-question-page{display:block;min-height:100svh;padding:112px 24px 52px}
+  .qa-question-page .qa-intro-copy .eyebrow{margin-bottom:22px}
+  .qa-question-page .qa-intro h1{font-size:clamp(42px,12vw,66px);line-height:1.25}
+  .qa-question-page .qa-intro h1 br{display:none}
+  .qa-question-page .qa-intro-note{margin-top:18px}
+  .qa-question-page .qa-workspace{margin-top:42px}
+  .qa-question-page .qa-start-card textarea{min-height:230px;padding-top:24px;font-size:23px;line-height:1.65}
+  .qa-question-page .qa-form-footer{align-items:stretch;flex-direction:column}
+  .qa-question-page .qa-form-footer .button{width:100%}
+  .qa-page[data-qa-view="processing"] .qa-search-ritual{min-height:calc(100svh - 78px);padding:44px 22px 205px}
+  .qa-page[data-qa-view="processing"] .qa-search-copy{min-height:430px}
+  .qa-page[data-qa-view="dialogue"] .qa-conversation{width:calc(100% - 36px);padding-top:56px}
+  .qa-page[data-qa-view="results"] .qa-results-hero{min-height:calc(100svh - 78px);padding:58px 0}
+}
+@media(prefers-reduced-motion:reduce){.qa-page[data-qa-view="dialogue"] .qa-dialogue{animation:none}}
+
+/* A 的视觉资产被本地化到 B；这里不改变任何 API、数据字段或会话逻辑。 */
+.qa-results-hero{background-image:url("assets/images/matched-paths-lake.jpg");background-position:center 48%}
+.qa-header .brand-mark{filter:none}
+.qa-results-hero:after{background:linear-gradient(90deg,rgba(7,22,18,.82) 0%,rgba(7,22,18,.52) 58%,rgba(7,22,18,.27)),linear-gradient(0deg,rgba(7,22,18,.5),transparent 58%)}
+.qa-photo-credit{position:absolute;right:20px;bottom:12px;z-index:2;margin:0;color:rgba(255,255,255,.58);font-size:10px}
+.qa-photo-credit a{text-decoration:underline;text-underline-offset:2px}
+
+/* 对话页：留出编辑式呼吸感，同时保持原有消息 DOM 与提交行为不变。 */
+.qa-page[data-qa-view="dialogue"] .qa-main{background:radial-gradient(circle at 76% 14%,rgba(168,102,66,.055),transparent 28%),linear-gradient(180deg,#f7f8f5,#f2f3ef)}
+.qa-page[data-qa-view="dialogue"] .qa-conversation{width:min(1420px,calc(100% - 9vw));padding-top:clamp(56px,8vh,92px)}
+.qa-dialogue{position:relative}
+.qa-dialogue:before{content:"02";position:absolute;right:0;top:-30px;color:rgba(32,37,34,.045);font:italic 500 clamp(90px,13vw,180px)/1 var(--serif);pointer-events:none}
+.qa-page[data-qa-view="dialogue"] .qa-conversation-heading{position:relative;z-index:1;align-items:end;margin:0 0 22px;padding-bottom:34px;border-bottom:1px solid var(--line)}
+.qa-page[data-qa-view="dialogue"] .qa-conversation-heading h2{font:600 clamp(48px,5.4vw,78px)/1.2 var(--serif);letter-spacing:-.055em}
+.qa-page[data-qa-view="dialogue"] .qa-status{margin:0 0 30px;color:#8d928e;font-size:13px}
+.qa-page[data-qa-view="dialogue"] .qa-messages{display:flex;gap:24px}
+.qa-page[data-qa-view="dialogue"] .qa-message{width:min(920px,76%);max-width:none;padding:30px 38px}
+.qa-page[data-qa-view="dialogue"] .qa-message.user{align-self:flex-end;margin-right:8%;background:#173d35;box-shadow:0 18px 42px rgba(23,61,53,.12)}
+.qa-page[data-qa-view="dialogue"] .qa-message.assistant{align-self:flex-start;width:min(760px,64%);border-left:2px solid var(--accent);box-shadow:0 18px 46px rgba(44,49,44,.07)}
+.qa-page[data-qa-view="dialogue"] .qa-message p{font-size:clamp(15px,1.35vw,19px);line-height:1.9}
+.qa-page[data-qa-view="dialogue"] .qa-message-actions{gap:12px;margin-top:22px}
+.qa-page[data-qa-view="dialogue"] .qa-suggestion{padding:10px 16px;border-color:#d7dad5;background:#fff;color:#48645d;transition:border-color .2s,color .2s,transform .2s}
+.qa-page[data-qa-view="dialogue"] .qa-suggestion:hover{transform:translateY(-2px)}
+.qa-page[data-qa-view="dialogue"] .qa-message-form{grid-template-columns:minmax(0,1fr) 176px;margin-top:34px;border-top:1px solid var(--accent)}
+.qa-page[data-qa-view="dialogue"] .qa-message-form textarea{min-height:126px;padding:20px 22px;border:0;border-bottom:1px solid var(--accent);background:rgba(255,255,255,.72);font-size:16px}
+.qa-page[data-qa-view="dialogue"] .qa-message-form .button{min-height:76px;margin-bottom:0;align-self:end}
+
+/* 匹配页恢复 A 的“下方人群”构图，阶段文案仍由现有前端状态驱动。 */
+.qa-page[data-qa-view="processing"] .qa-search-ritual{overflow:hidden;background:#fff}
+.qa-page[data-qa-view="processing"] .qa-search-ritual:before{background:radial-gradient(circle at 76% 18%,rgba(23,61,53,.05),transparent 31%),#fff}
+.qa-page[data-qa-view="processing"] .qa-search-copy{max-width:72%;min-height:calc(100svh - 300px)}
+.qa-page[data-qa-view="processing"] .qa-search-ritual h2{max-width:900px;font-size:clamp(46px,5vw,72px)}
+.qa-page[data-qa-view="processing"] .qa-analysis{max-width:950px;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 70px}
+.qa-page[data-qa-view="processing"] .qa-analysis-stage{min-height:106px}
+.qa-page[data-qa-view="processing"] .qa-crowd-stream{left:0;right:0;top:auto;bottom:-18px;width:100%;height:38vh;min-height:265px;opacity:.62;mask-image:linear-gradient(to bottom,transparent 0,#000 20%,#000 88%,transparent 100%)}
+.qa-page[data-qa-view="processing"] .qa-crowd-stream .qa-people-track{left:-12%;width:124%;gap:clamp(48px,7vw,118px)}
+.qa-page[data-qa-view="processing"] .qa-crowd-stream .qa-people-track:nth-child(1){top:4%;opacity:.24}
+.qa-page[data-qa-view="processing"] .qa-crowd-stream .qa-people-track:nth-child(2){top:36%;opacity:.52}
+.qa-page[data-qa-view="processing"] .qa-crowd-stream .qa-people-track:nth-child(3){top:68%;display:flex;opacity:.2}
+
+/* Open Peeps 同时用于加载、人群路径与来源人物卡。 */
+.qa-crowd-figure,.qa-path-person,.qa-source-person,.qa-detail-person{object-fit:contain;object-position:center;filter:grayscale(1);user-select:none}
+.qa-crowd-figure{height:clamp(74px,8vw,118px);width:auto}
+.qa-path-person{object-fit:contain}
+.qa-detail-person{object-fit:contain}
+
+@media(max-width:900px){
+  .qa-page[data-qa-view="dialogue"] .qa-conversation{width:min(720px,calc(100% - 48px))}
+  .qa-page[data-qa-view="dialogue"] .qa-message,.qa-page[data-qa-view="dialogue"] .qa-message.assistant{width:92%}
+  .qa-page[data-qa-view="dialogue"] .qa-message.user{margin-right:4%}
+  .qa-page[data-qa-view="processing"] .qa-search-copy{max-width:84%}
+  .qa-page[data-qa-view="processing"] .qa-analysis{grid-template-columns:1fr;gap:0}
+  .qa-page[data-qa-view="processing"] .qa-analysis-stage{min-height:76px;padding:12px 0}
+}
+@media(max-width:600px){
+  .qa-photo-credit{right:10px;bottom:7px;font-size:8px}
+  .qa-page[data-qa-view="dialogue"] .qa-conversation{width:calc(100% - 32px);padding-top:42px}
+  .qa-page[data-qa-view="dialogue"] .qa-conversation-heading{align-items:flex-start;margin-bottom:18px;padding-bottom:24px}
+  .qa-page[data-qa-view="dialogue"] .qa-conversation-heading h2{font-size:42px}
+  .qa-page[data-qa-view="dialogue"] .qa-message,.qa-page[data-qa-view="dialogue"] .qa-message.assistant{width:100%;padding:20px}
+  .qa-page[data-qa-view="dialogue"] .qa-message.user{margin-right:0}
+  .qa-page[data-qa-view="dialogue"] .qa-message-form{grid-template-columns:1fr}
+  .qa-page[data-qa-view="dialogue"] .qa-message-form textarea{min-height:112px}
+  .qa-page[data-qa-view="processing"] .qa-search-ritual{padding:38px 18px 200px}
+  .qa-page[data-qa-view="processing"] .qa-search-copy{max-width:none;min-height:430px}
+  .qa-page[data-qa-view="processing"] .qa-search-ritual h2{font-size:clamp(36px,10vw,48px)}
+  .qa-page[data-qa-view="processing"] .qa-crowd-stream{height:190px;min-height:190px;opacity:.42}
+}

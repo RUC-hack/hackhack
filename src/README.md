@@ -27,8 +27,11 @@ python -m http.server 8080
 - `index.html`：语义化页面结构与 SEO 信息
 - `styles.css`：视觉系统、响应式布局、动效与无障碍适配
 - `app.js`：数据渲染、导航、移动菜单、视口动画、本地图片优先和网络回退
-- `qa.html` / `qa.js` / `qa.css`：问答测试页及后端 API 调用
+- `qa.html` / `qa.js` / `qa.css`：唯一正式问答入口、交互协调及后端 API 调用
+- `journey.css`：从前端 A 提炼并由 B 正式使用的路径、人物与来源组件样式
+- `demo/curated-data.js`：与真实数据明确隔离的精选演示 AnswerEnvelope 和来源
 - `assets/images/`：本地策展图片；文件缺失或加载失败时自动回退到远程图片
+- `prototypes/frontend-a/`：前端 A 的完整可运行归档，不连接当前生产后端
 
 ## Unsplash 图片
 

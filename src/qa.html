@@ -10,63 +10,69 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="staging_src/journey.css">
+  <link rel="stylesheet" href="journey.css">
   <link rel="stylesheet" href="qa.css">
 </head>
-<body class="qa-page qa-live-page">
+<body class="qa-page qa-live-page" data-qa-view="question">
   <a class="skip-link" href="#main">跳至正文</a>
   <header class="site-header qa-header" id="site-header">
     <nav class="nav-shell" aria-label="主要导航">
       <a class="brand" href="index.html#top" aria-label="见众首页">
-        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <img class="brand-mark" src="assets/brand/logo-mark.svg" alt="" aria-hidden="true" width="100" height="120">
         <span>见众</span>
       </a>
       <button class="menu-toggle" type="button" aria-label="打开导航菜单" aria-expanded="false" aria-controls="nav-links">
         <span></span><span></span>
       </button>
-      <div class="nav-links" id="nav-links">
-        <a href="index.html#question">为什么</a>
-        <a href="index.html#framework">四个空间</a>
-        <a href="index.html#trajectories">相似人生</a>
-        <a href="index.html#rehearsal">人生预演</a>
-        <a href="qa.html" aria-current="page">问答测试</a>
+      <span class="qa-page-progress" id="qa-page-progress" aria-live="polite">01 / 03</span>
+      <div class="nav-links qa-result-nav" id="nav-links">
+        <a href="#qa-paths-list">人生路径</a>
+        <a href="#qa-people-pool">人物样本</a>
+        <a href="#qa-answer-context">边界与下一步</a>
       </div>
+      <button class="qa-header-reset" id="qa-header-reset" type="button">重新填写</button>
     </nav>
   </header>
 
   <main id="main" class="qa-main">
-    <section class="qa-intro container" aria-labelledby="qa-title">
-      <div class="qa-intro-copy">
-        <p class="eyebrow">BEGIN WITH A QUESTION</p>
-        <h1 id="qa-title">有什么让你纠结了<br><em>很久的事？</em></h1>
-        <p>越具体越好。不需要一次说完整，我们会在对话里慢慢把它说清楚。</p>
-      </div>
-    </section>
+    <div class="qa-question-page" id="qa-question-page">
+      <section class="qa-intro container" aria-labelledby="qa-title">
+        <div class="qa-intro-copy">
+          <p class="eyebrow">BEGIN WITH A QUESTION</p>
+          <h1 id="qa-title">有什么让你纠结了<br><em>很久的事？</em></h1>
+          <div class="qa-intro-note">
+            <p>越具体越好。不需要一次说完整，我们会在对话里慢慢把它说清楚。</p>
+            <p class="qa-mode-badge" id="qa-mode-badge" hidden></p>
+          </div>
+        </div>
+      </section>
 
-    <section class="qa-workspace container" id="qa-workspace" aria-label="问答工作区">
-      <form class="qa-card qa-start-card" id="start-form">
-        <div class="qa-card-heading">
-          <span class="qa-step">01 / 03</span>
-          <div><p class="eyebrow">WRITE IT DOWN</p><h2>把它交给一段对话</h2></div>
-        </div>
-        <label class="qa-label" for="problem-input">用自己的话描述，不需要一次说完整</label>
-        <textarea id="problem-input" name="problem" rows="6" maxlength="8000" required>我大四要毕业了。是继续读博，去互联网公司工作，还是回家乡？我担心读博以后年龄越来越大，也担心现在不去工作会错过好的就业机会。</textarea>
-        <div class="qa-form-footer">
-          <span>至少 8 个字符 · 支持在对话中继续补充</span>
-          <button class="button button-dark" type="submit"><span>开始寻找</span><span aria-hidden="true">↗</span></button>
-        </div>
-      </form>
+      <section class="qa-workspace container" id="qa-workspace" aria-label="问答工作区">
+        <form class="qa-card qa-start-card" id="start-form">
+          <div class="qa-card-heading">
+            <span class="qa-step">01 / 03</span>
+            <div><p class="eyebrow">WRITE IT DOWN</p><h2>把它交给一段对话</h2></div>
+          </div>
+          <label class="qa-label" for="problem-input">用自己的话描述，不需要一次说完整</label>
+          <textarea id="problem-input" name="problem" rows="6" maxlength="8000" required>我大四要毕业了。是继续读博，去互联网公司工作，还是回家乡？我担心读博以后年龄越来越大，也担心现在不去工作会错过好的就业机会。</textarea>
+          <div class="qa-error" id="qa-start-error" role="alert" hidden></div>
+          <div class="qa-form-footer">
+            <span>至少 8 个字符 · 支持 Ctrl / ⌘ + Enter</span>
+            <button class="button button-dark" type="submit"><span>完成回答</span><span aria-hidden="true">→</span></button>
+          </div>
+        </form>
 
-      <aside class="qa-card qa-guide">
-        <p class="eyebrow">HOW IT WORKS</p>
-        <h2>先听清问题，<br>再看见路径。</h2>
-        <div class="qa-guide-list">
-          <div><span>01</span><p>说出一个正在经历的选择或困惑。</p></div>
-          <div><span>02</span><p>回答一两个追问，让问题更接近真实的你。</p></div>
-          <div><span>03</span><p>从公开经验样本里，回看不同生活的质感与代价。</p></div>
-        </div>
-      </aside>
-    </section>
+        <aside class="qa-card qa-guide">
+          <p class="eyebrow">HOW IT WORKS</p>
+          <h2>先听清问题，<br>再看见路径。</h2>
+          <div class="qa-guide-list">
+            <div><span>01</span><p>说出一个正在经历的选择或困惑。</p></div>
+            <div><span>02</span><p>回答一两个追问，让问题更接近真实的你。</p></div>
+            <div><span>03</span><p>从公开经验样本里，回看不同生活的质感与代价。</p></div>
+          </div>
+        </aside>
+      </section>
+    </div>
 
     <section class="qa-conversation container" id="conversation" hidden aria-labelledby="conversation-title">
       <div class="qa-search-ritual" id="qa-search-ritual" hidden aria-hidden="true">
@@ -78,18 +84,20 @@
         </div>
         <div class="qa-crowd-stream" id="qa-crowd-stream" aria-hidden="true"></div>
       </div>
-      <div class="qa-conversation-heading">
+      <div class="qa-dialogue" id="qa-dialogue">
+        <div class="qa-conversation-heading">
           <div><p class="eyebrow">CURRENT QUESTION</p><h2 id="conversation-title">一段正在展开的对话</h2></div>
-        <button class="text-button" id="reset-button" type="button">重新开始 ↗</button>
+          <button class="text-button" id="reset-button" type="button">重新开始 ↗</button>
+        </div>
+        <div class="qa-status" id="qa-status" role="status" aria-live="polite"></div>
+        <div class="qa-messages" id="qa-messages" aria-live="polite"></div>
+        <div class="qa-error" id="qa-error" role="alert" hidden></div>
+        <form class="qa-message-form" id="message-form">
+          <label class="sr-only" for="message-input">继续输入</label>
+          <textarea id="message-input" rows="3" maxlength="8000" placeholder="补充你的情况，或回答我们的问题。" required></textarea>
+          <button class="button button-dark" type="submit"><span>发送</span><span aria-hidden="true">↑</span></button>
+        </form>
       </div>
-      <div class="qa-status" id="qa-status" role="status" aria-live="polite"></div>
-      <div class="qa-messages" id="qa-messages" aria-live="polite"></div>
-      <div class="qa-error" id="qa-error" role="alert" hidden></div>
-      <form class="qa-message-form" id="message-form">
-        <label class="sr-only" for="message-input">继续输入</label>
-        <textarea id="message-input" rows="3" maxlength="8000" placeholder="补充你的情况，或回答我们的问题。" required></textarea>
-        <button class="button button-dark" type="submit"><span>发送</span><span aria-hidden="true">↑</span></button>
-      </form>
     </section>
 
     <section class="qa-results" id="qa-results" hidden aria-labelledby="qa-results-title">
@@ -97,8 +105,9 @@
         <div class="container">
           <p class="eyebrow">SIMILAR LIVES · MATCHED PATHS</p>
           <h2 id="qa-results-title">关于「<span id="qa-result-question"></span>」，<br>TA 们是这样做的……</h2>
-          <p class="journey-results-intro">这里没有一条被计算出的正确道路。先看看不同的人怎样选择、承担，又怎样在后来重新理解当时的自己。</p>
+          <p class="journey-results-intro" id="qa-result-summary">这里没有一条被计算出的正确道路。先看看不同的人怎样选择、承担，又怎样在后来重新理解当时的自己。</p>
         </div>
+        <p class="qa-photo-credit">Photo by <a href="https://unsplash.com/@we_are_rising" target="_blank" rel="noopener noreferrer">lucas Favre</a> on <a href="https://unsplash.com/photos/BRTV55ErUZg" target="_blank" rel="noopener noreferrer">Unsplash</a></p>
       </section>
 
       <section class="journey-paths-section qa-results-paths" id="qa-paths-list" aria-labelledby="qa-paths-title">
@@ -116,10 +125,20 @@
             <p id="qa-people-description"></p>
           </header>
           <div class="journey-people-layout">
-            <div class="journey-person-list" id="qa-person-list" role="listbox" aria-label="选择一位知乎来源样本"></div>
+            <div class="journey-person-list" id="qa-person-list" role="listbox" aria-label="选择一条来源样本"></div>
             <article class="journey-person-detail" id="qa-person-detail" aria-live="polite"></article>
           </div>
-          <p class="content-note">人物卡片引用可回看的知乎公开页面。摘要只保留页面能够支持的内容，不补写答主身份与人生结局；这些经历是参照，不是预测或标准答案。</p>
+          <p class="content-note">人物卡片对应可回看的来源；精选演示、Mock 测试或本地降级数据会明确标识。摘要只保留来源能够支持的内容，不补写作者身份与人生结局；这些经历是参照，不是预测或标准答案。</p>
+        </div>
+      </section>
+
+      <section class="qa-answer-context" id="qa-answer-context" aria-labelledby="qa-answer-context-title">
+        <div class="container">
+          <header class="qa-context-heading">
+            <p class="eyebrow">03 · BOUNDARIES &amp; NEXT STEPS</p>
+            <h2 id="qa-answer-context-title">带着边界，继续往前看</h2>
+          </header>
+          <div class="qa-context-grid" id="qa-context-grid"></div>
         </div>
       </section>
     </section>
@@ -131,6 +150,7 @@
 
   <script src="app-config.js"></script>
   <script>window.APP_CONFIG = { ...(window.APP_CONFIG || {}), apiBaseUrl: window.APP_CONFIG?.apiBaseUrl || "http://127.0.0.1:3000" };</script>
+  <script src="demo/curated-data.js"></script>
   <script src="qa.js"></script>
 </body>
 </html>
