@@ -2,19 +2,115 @@
   "use strict";
 
   const apiBaseUrl = (window.APP_CONFIG?.apiBaseUrl || "http://127.0.0.1:3000").replace(/\/$/u, "");
-  const state = { sessionId: null, busy: false, turn: 0 };
+  const routeOverride = new URLSearchParams(window.location.search).get("mode");
+  const CURATED_TOPIC_PATTERN = /(?:毕业|就业|校招|应届|求职|找工作|工作机会|先工作|读博|博士|大厂|回家乡|返乡)/iu;
+  const STUDY_WORK_PATTERN = /(?:(?:考研|读研).{0,12}(?:工作|就业)|(?:工作|就业).{0,12}(?:考研|读研))/iu;
+
+  function shouldUseCuratedFlow(value) {
+    if (routeOverride === "live") return false;
+    if (routeOverride === "curated") return true;
+    const problem = String(value || "").replace(/\s+/gu, " ").trim();
+    return CURATED_TOPIC_PATTERN.test(problem) || STUDY_WORK_PATTERN.test(problem);
+  }
+  const DEMO_SOURCES = Object.freeze({
+    "demo:zhihu:phd-or-work": {
+      source_id: "demo:zhihu:phd-or-work",
+      title: "读博和继续工作该怎么选？",
+      author: "知乎公开答主",
+      identity: "一位围绕在职申请、研究日常与机会成本给出具体建议的公开答主。页面不推断其现实身份。",
+      summary: "这条回答没有把选择压缩成“年龄是否来得及”，而是建议先核验目标岗位是否真的需要博士，再用一段有限时间测试研究计划、导师匹配与自己对长期研究节奏的耐受度。",
+      url: "https://www.zhihu.com/question/2067227711869826244/answer/2067738474992625078",
+      content_type: "answer",
+      provider: "demo",
+      match_reasons: ["回应了读博的时间与机会成本", "把模糊焦虑拆成可验证的行动", "没有把博士当作逃离工作的自动答案"],
+    },
+    "demo:zhihu:career-choice": {
+      source_id: "demo:zhihu:career-choice",
+      title: "2022 年如何找到一份适合自己的工作？",
+      author: "Jacob贾超",
+      author_url: "https://www.zhihu.com/people/jia-chao-51",
+      identity: "知乎职业发展话题答主。这里仅引用其公开回答里关于行业、公司与岗位选择维度的讨论。",
+      summary: "这条回答把“找一份好工作”拆成行业、公司和岗位三个层次，并提醒选择要同时观察个人兴趣、能力匹配与真实的市场需求。",
+      url: "https://www.zhihu.com/question/526469105/answer/2427259849",
+      content_type: "answer",
+      provider: "demo",
+      match_reasons: ["提供了进入工作的具体观察维度", "强调岗位日常而不只看公司标签", "适合用来设计一段有边界的职业验证"],
+    },
+    "demo:zhihu:hometown": {
+      source_id: "demo:zhihu:hometown",
+      title: "你为什么选择留在郑州？",
+      author: "379 位公开答主",
+      identity: "一个讨论城市机会、生活成本、熟悉关系与个人适配度的知乎问题页。这里把它作为多声部讨论，而不是单一个案。",
+      summary: "讨论中的经历提醒我们：城市选择不只是薪资和级别比较，还包括生活成本、关系网络、职业机会与自己在一座城市里的舒适程度。不同回答之间并没有统一结论。",
+      url: "https://www.zhihu.com/question/327189160",
+      content_type: "question",
+      provider: "demo",
+      match_reasons: ["把家乡从抽象退路变成具体生活", "保留了多位答主彼此不同的城市经验", "提醒同时比较机会密度与完整生活"],
+    },
+  });
+  const DEMO_ANSWER = Object.freeze({
+    summary: "你面对的不是一道必须一次押对的终局题，而是三种不同的验证方式。先辨认自己想过的日常，再决定下一段两三年把什么放在前面。",
+    sections: [
+      {
+        kind: "path",
+        title: "把读博变成一次可验证的研究生活",
+        content: "先不问“博士是不是更好的标签”，而是验证三个更具体的问题：目标岗位是否真的需要博士、你是否愿意长期面对低反馈的研究日常、现实现金流能否支撑。可以先用 6—8 周完成一份小型研究计划，并和真实导师或在读博士交流，再决定是否申请。",
+        source_ids: ["demo:zhihu:phd-or-work"],
+      },
+      {
+        kind: "path",
+        title: "先进入工作，用两年看清自己的反馈偏好",
+        content: "先工作不等于永远告别研究。把第一份工作当作有期限的验证：观察自己是否喜欢团队协作、快速交付和业务反馈，同时保留学习记录与申请材料。比起只看“大厂”标签，更值得比较的是具体岗位、直属团队和每天会做的事。",
+        source_ids: ["demo:zhihu:career-choice"],
+      },
+      {
+        kind: "path",
+        title: "把家乡放回一张完整的生活地图",
+        content: "回家乡不必被理解为退路。把当地岗位、收入与成本、家庭距离、关系网络和未来流动性放在同一张表里；如果岗位还不明确，可以先访谈三位已经回去的人，确认真实日常后再做决定。",
+        source_ids: ["demo:zhihu:hometown"],
+      },
+    ],
+    assumptions: ["你仍然愿意了解科研与产业两种生活", "这三条路目前都没有不可逆的现实限制"],
+    unknowns: ["你对研究日常的真实体验", "三个选项对应的具体岗位与经济条件"],
+    limitations: ["这份整理提供的是人生参照，不是对个人处境的自动判断。", "公开回答只代表有限个体经验，链接内容也可能在知乎侧发生变化。"],
+  });
+  const state = {
+    sessionId: null,
+    busy: false,
+    turn: 0,
+    ritualTimers: [],
+    sourceCache: new Map(),
+    matchedPaths: [],
+    activePathIndex: 0,
+    activeSourceId: null,
+    demoStep: 0,
+    flowMode: null,
+  };
   const $ = (selector) => document.querySelector(selector);
   const refs = {
     startForm: $("#start-form"),
     workspace: $("#qa-workspace"),
     problemInput: $("#problem-input"),
     conversation: $("#conversation"),
+    searchRitual: $("#qa-search-ritual"),
+    searchEyebrow: $("#qa-search-eyebrow"),
+    searchTitle: $("#qa-search-title"),
+    analysisStages: $("#qa-analysis-stages"),
+    searchResult: $("#qa-search-result"),
+    crowdStream: $("#qa-crowd-stream"),
     messages: $("#qa-messages"),
     status: $("#qa-status"),
     error: $("#qa-error"),
     messageForm: $("#message-form"),
     messageInput: $("#message-input"),
     reset: $("#reset-button"),
+    results: $("#qa-results"),
+    resultQuestion: $("#qa-result-question"),
+    pathList: $("#qa-path-list"),
+    peopleTitle: $("#qa-people-title"),
+    peopleDescription: $("#qa-people-description"),
+    personList: $("#qa-person-list"),
+    personDetail: $("#qa-person-detail"),
   };
 
   function makeTurnId() {
@@ -84,6 +180,111 @@
   function showError(error) { refs.error.textContent = explainError(error); refs.error.hidden = false; }
   function clearError() { refs.error.textContent = ""; refs.error.hidden = true; }
 
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>'"]/g, (character) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;",
+    })[character]);
+  }
+
+  function figureMarkup(index, className = "qa-path-person") {
+    const figure = (Math.abs(Number(index)) % 6) + 1;
+    return `<svg class="${className}" viewBox="0 0 120 160" role="img" aria-label="人生样本插画"><use href="assets/people/figures.svg#person-${figure}"></use></svg>`;
+  }
+
+  const ritualModes = {
+    understanding: {
+      eyebrow: "LISTENING TO YOUR QUESTION",
+      title: "先听清你，再寻找参照。",
+      result: "正在把你的话整理成可以继续追问的线索。",
+      stages: [
+        ["读取问题", "先保留你真正说出来的部分。"],
+        ["识别核心变量", "分辨选择、在意的事与还没说出口的担心。"],
+        ["生成待确认问题", "准备一个更接近你当前处境的追问。"],
+        ["打开一段对话", "先不急着给答案。"],
+      ],
+    },
+    retrieval: {
+      eyebrow: "SEARCHING THE HUMAN ARCHIVE",
+      title: "正在寻找可能与你有<br>相似经历的知友……",
+      result: "正在让你的问题进入一片更大的人生样本。",
+      stages: [
+        ["读取补充信息", "把你刚刚说的背景放回问题里。"],
+        ["识别选择与代价", "看见每条路需要承担的日常。"],
+        ["匹配公开经历", "从公开分享里寻找走过相似道路的人。"],
+        ["整理不同路径", "只留下可以被回看的经验参照。"],
+      ],
+    },
+  };
+
+  function buildCrowdStream() {
+    if (refs.crowdStream.childElementCount) return;
+    const tracks = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 2 : 3;
+    for (let row = 0; row < tracks; row += 1) {
+      const track = document.createElement("div");
+      track.className = "journey-people-track qa-people-track";
+      for (let index = 0; index < 11; index += 1) {
+        track.insertAdjacentHTML("beforeend", figureMarkup(row * 11 + index, "qa-crowd-figure"));
+      }
+      refs.crowdStream.append(track);
+    }
+  }
+
+  function stopSearchRitual() {
+    state.ritualTimers.forEach((timer) => window.clearTimeout(timer));
+    state.ritualTimers = [];
+    refs.searchRitual.classList.remove("is-active", "is-understanding", "is-retrieval");
+    refs.conversation.classList.remove("is-searching");
+    refs.searchRitual.hidden = true;
+    refs.searchRitual.setAttribute("aria-hidden", "true");
+  }
+
+  function startSearchRitual(mode) {
+    stopSearchRitual();
+    const ritual = ritualModes[mode] || ritualModes.understanding;
+    refs.searchEyebrow.textContent = ritual.eyebrow;
+    refs.searchTitle.innerHTML = ritual.title;
+    refs.searchResult.textContent = ritual.result;
+    refs.searchResult.classList.remove("is-found");
+    refs.analysisStages.replaceChildren();
+    ritual.stages.forEach(([title, body], index) => {
+      const stage = document.createElement("li");
+      stage.className = "qa-analysis-stage";
+      const label = document.createElement("span");
+      label.className = "qa-analysis-label";
+      label.textContent = `0${index + 1}`;
+      const heading = document.createElement("strong");
+      heading.textContent = title;
+      const description = document.createElement("p");
+      description.textContent = body;
+      stage.append(label, heading, description);
+      refs.analysisStages.append(stage);
+    });
+    buildCrowdStream();
+    refs.crowdStream.querySelectorAll(".is-matched").forEach((person) => person.classList.remove("is-matched"));
+    refs.searchRitual.classList.add("is-active", `is-${mode}`);
+    refs.conversation.classList.add("is-searching");
+    refs.searchRitual.hidden = false;
+    refs.searchRitual.setAttribute("aria-hidden", "false");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const schedule = reducedMotion ? [40, 100, 160, 220] : [180, 720, 1500, 2350];
+    const stages = [...refs.analysisStages.children];
+    stages.forEach((stage, index) => {
+      state.ritualTimers.push(window.setTimeout(() => stage.classList.add("is-visible"), schedule[index]));
+    });
+    state.ritualTimers.push(window.setTimeout(() => {
+      refs.searchResult.classList.add("is-found");
+      refs.searchResult.textContent = mode === "retrieval" ? "找到一组可以回看的生活参照。" : "你的问题已经有了继续展开的方向。";
+      [...refs.crowdStream.querySelectorAll(".qa-crowd-figure")].filter((_, index) => index % 9 === 2).forEach((person) => person.classList.add("is-matched"));
+    }, reducedMotion ? 280 : 3000));
+    window.requestAnimationFrame(() => {
+      if (mode === "retrieval") refs.searchRitual.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+    });
+  }
+
   function appendMessage(role, text) {
     const article = document.createElement("article");
     article.className = `qa-message ${role}`;
@@ -113,6 +314,61 @@
     }
     article.append(actions);
     return article;
+  }
+
+  function waitForDemoRitual() {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    return new Promise((resolve) => window.setTimeout(resolve, reducedMotion ? 420 : 3400));
+  }
+
+  function setDemoBusy(busy) {
+    state.busy = busy;
+    document.body.classList.toggle("is-demo-busy", busy);
+    refs.messageInput.disabled = busy;
+    refs.messageForm.querySelector("button").disabled = busy;
+  }
+
+  async function runDemoInitial(problem) {
+    state.sessionId = "local-demo";
+    state.demoStep = 0;
+    refs.startForm.hidden = true;
+    refs.conversation.hidden = false;
+    refs.workspace.classList.add("is-exiting");
+    finishStartLayout();
+    appendMessage("user", problem);
+    setDemoBusy(true);
+    startSearchRitual("understanding");
+    setStatus("正在听见你的问题…");
+    await waitForDemoRitual();
+    stopSearchRitual();
+    appendAssistantWithActions(
+      "如果只能先确认一件事：你此刻更想看清哪一种代价？这会改变我们优先回看的经历。",
+      ["更担心错过工作机会", "更担心放弃研究兴趣", "更在意离家与生活成本"],
+    );
+    state.demoStep = 1;
+    setStatus("任选一项，或直接输入一句话。");
+    setDemoBusy(false);
+    refs.messageInput.focus();
+  }
+
+  async function runDemoTurn(message) {
+    if (!message || state.busy || state.demoStep !== 1) return;
+    clearError();
+    appendMessage("user", message);
+    refs.messageInput.value = "";
+    setDemoBusy(true);
+    startSearchRitual("retrieval");
+    setStatus("正在整理与你的问题有关的人生路径…");
+    await waitForDemoRitual();
+    stopSearchRitual();
+    appendAnswer(DEMO_ANSWER);
+    await renderMatchedPaths(DEMO_ANSWER);
+    state.demoStep = 2;
+    setStatus("参照已整理完成，你可以展开路径并回看公开来源。");
+    setDemoBusy(false);
+    refs.messageInput.disabled = true;
+    refs.messageInput.placeholder = "这次参照已整理完成，可点击“重新开始”再次梳理。";
+    refs.messageForm.querySelector("button").disabled = true;
   }
 
   function appendAnswer(answer) {
@@ -169,9 +425,7 @@
     sources.className = "qa-sources";
     sources.textContent = "来源加载中…";
     container.append(sources);
-    const results = await Promise.all(sourceIds.slice(0, 8).map(async (sourceId) => {
-      try { return await request(`/api/sources/${encodeURIComponent(sourceId)}`); } catch { return null; }
-    }));
+    const results = await Promise.all(sourceIds.slice(0, 8).map((sourceId) => getSource(sourceId)));
     sources.textContent = "";
     for (const source of results.filter(Boolean)) {
       const link = document.createElement("a");
@@ -182,6 +436,173 @@
       sources.append(link);
     }
     if (!sources.childElementCount) sources.remove();
+  }
+
+  function getSource(sourceId) {
+    if (!sourceId) return Promise.resolve(null);
+    if (DEMO_SOURCES[sourceId]) return Promise.resolve(DEMO_SOURCES[sourceId]);
+    if (!state.sourceCache.has(sourceId)) {
+      const pending = request(`/api/sources/${encodeURIComponent(sourceId)}`).catch(() => null);
+      state.sourceCache.set(sourceId, pending);
+    }
+    return state.sourceCache.get(sourceId);
+  }
+
+  function answerSectionText(section) {
+    if (typeof section?.content === "string") return section.content;
+    if (section?.content === undefined || section?.content === null) return "这部分暂时没有可展示的回答内容。";
+    try { return JSON.stringify(section.content, null, 2); } catch { return String(section.content); }
+  }
+
+  function normalizePathTitle(value, index) {
+    const fallback = `一条可以回看的路径 ${index + 1}`;
+    let title = String(value || fallback).trim();
+    title = title.replace(/优势与劣势/gu, "侧重与代价");
+    title = title.replace(/核心优势|个人优势|优势/gu, "可迁移能力");
+    title = title.replace(/劣势/gu, "限制");
+    title = title.replace(/最优选择|最佳选择|正确答案/gu, "可回看的选择");
+    title = title.replace(/成功路径/gu, "走过的路径");
+    title = title.replace(/适合人群/gu, "相似处境");
+    return title || fallback;
+  }
+
+  function buildMatchedPaths(answer) {
+    const sections = Array.isArray(answer?.sections) ? answer.sections : [];
+    const paths = sections.map((section, index) => ({
+      id: `answer-path-${index + 1}`,
+      number: String(index + 1).padStart(2, "0"),
+      title: normalizePathTitle(section?.title, index),
+      description: answerSectionText(section),
+      excerpt: answerSectionText(section).length > 190 ? `${answerSectionText(section).slice(0, 190)}…` : answerSectionText(section),
+      sourceIds: Array.isArray(section?.source_ids) ? [...new Set(section.source_ids.filter(Boolean))] : [],
+      sources: [],
+    }));
+    return paths.length ? paths : [{
+      id: "answer-path-1",
+      number: "01",
+      title: "先把问题放回真实生活",
+      description: answer?.summary || "这次回答暂时没有拆出更多路径，但仍可以从知乎原文中继续回看。",
+      excerpt: answer?.summary || "这次回答暂时没有拆出更多路径，但仍可以从知乎原文中继续回看。",
+      sourceIds: [],
+      sources: [],
+    }];
+  }
+
+  function renderPathList() {
+    refs.pathList.innerHTML = state.matchedPaths.map((path, index) => {
+      const people = path.sources.length ? path.sources.slice(0, 3) : [null, null, null];
+      const active = index === state.activePathIndex;
+      return `<button class="journey-path" type="button" data-answer-path-index="${index}" aria-current="${active}">
+        <span class="journey-path-number">${escapeHTML(path.number)}</span>
+        <span class="journey-path-copy"><h3>${escapeHTML(path.title)} <span class="journey-viewed"${active ? "" : " hidden"}>VIEWED</span></h3><span class="journey-path-count">${path.sourceIds.length} 条知乎来源</span><p>${escapeHTML(path.excerpt)}</p></span>
+        <span class="journey-path-people" aria-hidden="true">${people.map((_, personIndex) => figureMarkup(index * 3 + personIndex, "qa-path-person")).join("")}</span>
+      </button>`;
+    }).join("");
+    refs.pathList.onclick = (event) => {
+      const button = event.target.closest("[data-answer-path-index]");
+      if (button) selectMatchedPath(button.dataset.answerPathIndex, true);
+    };
+  }
+
+  function selectMatchedPath(index, shouldScroll = false) {
+    const safeIndex = Math.min(Math.max(Number(index) || 0, 0), Math.max(state.matchedPaths.length - 1, 0));
+    const path = state.matchedPaths[safeIndex];
+    if (!path) return;
+    state.activePathIndex = safeIndex;
+    renderPathList();
+    refs.peopleTitle.textContent = `${path.title}的人`;
+    refs.peopleDescription.textContent = path.sourceIds.length
+      ? `这些知乎回答被放在同一条路径里，先看看不同答主怎样经历它，再回到你自己的问题。`
+      : "这条路径暂时没有可回读的知乎来源。";
+    renderPeople(path);
+    if (shouldScroll) refs.results.querySelector("#qa-people-pool").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function renderPeople(path) {
+    if (!path.sources.length) {
+      refs.personList.innerHTML = `<p class="qa-results-empty">这条路径暂时没有可展示的来源。</p>`;
+      refs.personDetail.innerHTML = `<div class="qa-person-empty"><p class="eyebrow">NO SOURCE YET</p><h3>先回到上面的路径</h3><p>当前回答没有把具体来源绑定到这一节，暂时不补写人物信息。</p></div>`;
+      return;
+    }
+    refs.personList.innerHTML = path.sources.map((source, index) => {
+      const author = source.author?.trim() || "知乎未署名答主";
+      const title = source.title || "一条知乎回答";
+      const personLabel = source.content_type === "question" ? author : `Hi，我是${author}`;
+      return `<button class="journey-person-select" type="button" role="option" data-answer-source-id="${escapeHTML(source.source_id)}" aria-selected="${source.source_id === state.activeSourceId || (!state.activeSourceId && index === 0)}">
+        ${figureMarkup(index, "qa-source-person")}
+        <span><strong>${escapeHTML(personLabel)}</strong><span>${escapeHTML(title)}</span></span>
+      </button>`;
+    }).join("");
+    refs.personList.onclick = (event) => {
+      const button = event.target.closest("[data-answer-source-id]");
+      if (button) selectSource(button.dataset.answerSourceId, window.innerWidth <= 900);
+    };
+    const initial = path.sources.find((source) => source.source_id === state.activeSourceId) || path.sources[0];
+    selectSource(initial.source_id, false);
+  }
+
+  function selectSource(sourceId, shouldScroll = false) {
+    const path = state.matchedPaths[state.activePathIndex];
+    const source = path?.sources.find((item) => item.source_id === sourceId) || path?.sources[0];
+    if (!source) return;
+    state.activeSourceId = source.source_id;
+    refs.personList.querySelectorAll("[data-answer-source-id]").forEach((button) => {
+      button.setAttribute("aria-selected", String(button.dataset.answerSourceId === source.source_id));
+    });
+    refs.personDetail.classList.add("is-changing");
+    window.setTimeout(() => {
+      renderSourceDetail(source);
+      refs.personDetail.classList.remove("is-changing");
+      if (shouldScroll) refs.personDetail.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 180);
+  }
+
+  function renderSourceDetail(source) {
+    const author = source.author?.trim() || "知乎未署名答主";
+    const directAuthorUrl = source.author_url || source.metadata?.author_url || "";
+    const authorUrl = directAuthorUrl || source.url;
+    const authorLinkLabel = directAuthorUrl ? "查看答主主页 ↗" : "查看公开页面 ↗";
+    const sourceUrl = source.url || "https://www.zhihu.com";
+    const sourceType = source.content_type === "article" ? "知乎文章" : source.content_type === "question" ? "知乎讨论" : "知乎回答";
+    const votes = Number.isFinite(Number(source.metadata?.vote_up_count)) ? ` · ${source.metadata.vote_up_count} 赞同` : "";
+    const path = state.matchedPaths[state.activePathIndex];
+    const sourceEyebrow = sourceType === "知乎文章" ? "PUBLIC ZHIHU ARTICLE" : sourceType === "知乎讨论" ? "PUBLIC ZHIHU DISCUSSION" : "PUBLIC ZHIHU ANSWER";
+    const sourceLinkLabel = sourceType === "知乎文章" ? "在知乎打开原文 ↗" : sourceType === "知乎讨论" ? "在知乎打开讨论 ↗" : "在知乎打开原回答 ↗";
+    const responseHeading = sourceType === "知乎讨论" ? "讨论里看到了什么" : "TA 的回答";
+    const identity = source.identity || `${author} 的一条公开${sourceType}，被放进「${path?.title || "当前路径"}」作为经历参照。`;
+    const reasons = Array.isArray(source.match_reasons) && source.match_reasons.length
+      ? source.match_reasons
+      : ["这条内容与当前路径的主题直接相关。", "它保留了对选择、日常或代价的公开描述。", "它需要和其他样本一起阅读，不能代表所有人的情况。"];
+    const provenanceText = source.provider === "demo"
+      ? "这里只保留一段有限摘要；点击入口可回到知乎查看公开页面与完整上下文。"
+      : "来源已由后端保存，可通过原文入口回到知乎查看完整内容。";
+    refs.personDetail.innerHTML = `<header class="journey-person-identity"><div><p class="eyebrow">${sourceEyebrow}</p><h3><a href="${escapeHTML(authorUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(author)}</a></h3><p><a class="qa-source-title-link" href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(source.title || "打开这条知乎来源")}</a></p><p class="qa-source-meta">${sourceType}${votes}</p></div>${figureMarkup(source.source_id.length, "qa-detail-person")}</header>
+      <section class="journey-detail-section"><h4>这是谁的经验</h4><p>${escapeHTML(identity)}</p></section>
+      <section class="journey-detail-section"><h4>${responseHeading}</h4><p class="qa-source-answer">${escapeHTML(source.summary || "知乎没有返回可展示的回答摘要。")}</p></section>
+      <section class="journey-detail-section"><h4>为什么匹配到这里</h4><ul class="journey-match-reasons">${reasons.map((reason) => `<li>${escapeHTML(reason)}</li>`).join("")}</ul></section>
+      <section class="journey-detail-section"><h4>这条来源</h4><div class="journey-detail-timeline"><div class="journey-detail-event"><time>知乎 · ${escapeHTML(source.content_type || "answer")}</time><p>${escapeHTML(source.title || "未命名回答")}</p></div><div class="journey-detail-event"><time>有限摘要 · 保留原链</time><p>${escapeHTML(provenanceText)}</p></div></div></section>
+      <div class="journey-detail-actions"><a class="button button-dark" href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">${sourceLinkLabel}</a><a class="button journey-outline-button" href="${escapeHTML(authorUrl)}" target="_blank" rel="noopener noreferrer">${authorLinkLabel}</a></div>`;
+  }
+
+  async function renderMatchedPaths(answer) {
+    state.matchedPaths = buildMatchedPaths(answer);
+    state.activePathIndex = 0;
+    state.activeSourceId = null;
+    refs.resultQuestion.textContent = refs.problemInput.value.trim().replace(/[\r\n]+/g, " ").slice(0, 42);
+    refs.results.hidden = false;
+    refs.results.classList.remove("is-visible");
+    renderPathList();
+    refs.peopleTitle.textContent = "这条路上的人";
+    refs.peopleDescription.textContent = "正在把本次回答中的知乎来源整理成可以回看的样本。";
+    refs.personList.innerHTML = `<p class="qa-results-loading">正在读取知乎来源…</p>`;
+    refs.personDetail.innerHTML = `<div class="qa-person-empty"><p class="eyebrow">LOADING SOURCES</p><h3>正在整理人物样本</h3><p>很快就会把答主和原回答放在这里。</p></div>`;
+    window.requestAnimationFrame(() => refs.results.classList.add("is-visible"));
+    const sourceIds = [...new Set(state.matchedPaths.flatMap((path) => path.sourceIds))];
+    const sourceResults = await Promise.all(sourceIds.map((sourceId) => getSource(sourceId)));
+    const sourceMap = new Map(sourceResults.filter(Boolean).map((source) => [source.source_id, source]));
+    state.matchedPaths.forEach((path) => { path.sources = path.sourceIds.map((sourceId) => sourceMap.get(sourceId)).filter(Boolean); });
+    selectMatchedPath(0, false);
+    window.requestAnimationFrame(() => refs.results.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
 
   function renderTurn(result) {
@@ -202,31 +623,39 @@
     }
     if (result.action === "respond") {
       appendAnswer(result.answer);
+      void renderMatchedPaths(result.answer);
       setStatus("参照已整理完成，你可以继续补充或追问。");
       return;
     }
     appendMessage("assistant", result.reason || "我还需要一点信息，才能继续。");
   }
 
-  async function sendTurn(text) {
+  async function sendTurn(text, { initial = false } = {}) {
     const message = String(text || "").trim();
     if (!message || !state.sessionId || state.busy) return;
+    if (state.flowMode === "curated") {
+      await runDemoTurn(message);
+      return;
+    }
     clearError();
     appendMessage("user", message);
     refs.messageInput.value = "";
     state.busy = true;
+    state.turn += 1;
     refs.messageForm.querySelector("button").disabled = true;
-    setStatus("正在理解你的问题并整理参照…");
+    startSearchRitual(initial ? "understanding" : "retrieval");
+    setStatus(initial ? "正在听见你的问题…" : "正在寻找相似人生并整理参照…");
     try {
       const result = await request(`/api/sessions/${encodeURIComponent(state.sessionId)}/messages`, {
         method: "POST",
         body: JSON.stringify({ message, client_turn_id: makeTurnId() }),
-      }, { timeoutMs: 70_000 });
+      }, { timeoutMs: 190_000 });
       renderTurn(result);
     } catch (error) {
       showError(error);
       setStatus("本轮没有完成，可以修改内容后再次发送。");
     } finally {
+      stopSearchRitual();
       state.busy = false;
       refs.messageForm.querySelector("button").disabled = false;
       refs.messageInput.focus();
@@ -236,39 +665,65 @@
   async function startSession(event) {
     event.preventDefault();
     const problem = refs.problemInput.value.trim();
-    if (!problem) return;
+    if (problem.length < 8) {
+      const error = new Error("demo question too short");
+      error.code = "INVALID_REQUEST";
+      showError(error);
+      return;
+    }
     clearError();
-    const button = refs.startForm.querySelector("button");
+    const button = refs.startForm.querySelector('button[type="submit"]');
     button.disabled = true;
     button.querySelector("span").textContent = "正在进入…";
     try {
+      state.flowMode = shouldUseCuratedFlow(problem) ? "curated" : "live";
+      if (state.flowMode === "curated") {
+        await runDemoInitial(problem);
+        return;
+      }
       await ensureBackendReady();
       const session = await request("/api/sessions", { method: "POST", body: JSON.stringify({ problem_statement: "" }) });
       state.sessionId = session.session_id;
       refs.startForm.hidden = true;
       refs.conversation.hidden = false;
       refs.workspace.classList.add("is-exiting");
-      await sendTurn(problem);
+      window.requestAnimationFrame(() => scrollToLiveSession());
+      await sendTurn(problem, { initial: true });
       finishStartLayout();
     } catch (error) {
       showError(error);
     } finally {
       button.disabled = false;
-      button.querySelector("span").textContent = "开始对话";
+      button.querySelector("span").textContent = "开始寻找";
     }
   }
 
   function resetSession() {
+    stopSearchRitual();
     state.sessionId = null;
     state.busy = false;
+    state.turn = 0;
+    state.demoStep = 0;
+    state.flowMode = null;
     refs.messages.replaceChildren();
     refs.messageInput.value = "";
+    refs.messageInput.disabled = false;
+    refs.messageInput.placeholder = "补充你的情况，或回答我们的问题。";
+    refs.messageForm.querySelector("button").disabled = false;
     refs.startForm.hidden = false;
     refs.workspace.hidden = false;
     refs.workspace.classList.remove("is-exiting", "session-started");
     refs.workspace.removeAttribute("aria-hidden");
     refs.conversation.hidden = true;
     refs.conversation.classList.remove("live-session-active");
+    refs.results.hidden = true;
+    refs.results.classList.remove("is-visible");
+    refs.pathList.replaceChildren();
+    refs.personList.replaceChildren();
+    refs.personDetail.replaceChildren();
+    state.matchedPaths = [];
+    state.activePathIndex = 0;
+    state.activeSourceId = null;
     clearError();
     setStatus("");
     refs.problemInput.focus();

@@ -8,7 +8,7 @@ import { healthData } from "./api/routes-health.mjs";
 import { loadRuntimeConfig } from "./config/runtime-config.mjs";
 import { appError } from "./contracts/errors.mjs";
 import { createHttpServer } from "./api/http-server.mjs";
-import { LlmClient } from "./integrations/llm-client.mjs";
+import { ResilientLlmClient } from "./integrations/resilient-llm-client.mjs";
 import { ZhihuSearchClient } from "./integrations/zhihu-search-client.mjs";
 import { ZhihuProvider } from "./providers/zhihu-provider.mjs";
 import { LocalDatasetProvider } from "./providers/local-dataset-provider.mjs";
@@ -19,7 +19,7 @@ import { AgentOrchestrator } from "./services/agent-orchestrator.mjs";
 import { AnswerBuilder } from "./services/answer-builder.mjs";
 import { EvidenceService } from "./services/evidence-service.mjs";
 import { SafetyService } from "./services/safety-service.mjs";
-import { LlmGateway } from "./services/llm-gateway.mjs";
+import { ValidatedLlmGateway } from "./services/validated-llm-gateway.mjs";
 import { MockLlmGateway } from "./services/mock-llm-gateway.mjs";
 import { AuditLogger } from "./storage/audit-logger.mjs";
 import { JsonlSessionStore } from "./storage/jsonl-session-store.mjs";
@@ -72,7 +72,7 @@ export function createApp(overrides = {}) {
   const primaryProvider = overrides.primaryProvider ?? (config.data_provider === "mock" ? mockProvider : config.data_provider === "zhihu" ? zhihuProvider : localProvider);
   const fallbackProvider = overrides.fallbackProvider ?? (config.data_provider === "zhihu" ? localProvider : null);
   const retrievalService = overrides.retrievalService ?? new RetrievalService({ primaryProvider, fallbackProvider });
-  const llmClient = overrides.llmClient ?? new LlmClient({
+  const llmClient = overrides.llmClient ?? new ResilientLlmClient({
     apiKey: config.deepseek_api_key,
     baseUrl: config.deepseek_base_url,
     model: config.deepseek_model,
@@ -80,8 +80,9 @@ export function createApp(overrides = {}) {
     maxRetries: config.deepseek_max_retries,
     temperature: config.deepseek_temperature,
     maxTokens: config.deepseek_max_tokens,
+    logger,
   });
-  const llmGateway = overrides.llmGateway ?? (config.allow_live_external_calls && config.deepseek_api_key ? new LlmGateway({ client: llmClient }) : new MockLlmGateway());
+  const llmGateway = overrides.llmGateway ?? (config.allow_live_external_calls && config.deepseek_api_key ? new ValidatedLlmGateway({ client: llmClient }) : new MockLlmGateway());
   const sessionService = overrides.sessionService ?? new SessionService({ store: sessionStore, now, idFactory, maxQuestions: config.max_questions });
   const evidenceService = overrides.evidenceService ?? new EvidenceService({ now, idFactory });
   const answerBuilder = overrides.answerBuilder ?? new AnswerBuilder({ llmGateway });

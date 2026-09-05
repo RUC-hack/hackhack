@@ -44,7 +44,7 @@ export class SessionService {
     return publicSessionView(await this.get(sessionId));
   }
 
-  async appendUserMessage(sessionId, { text, clientTurnId = null } = {}) {
+  async appendUserMessage(sessionId, { text, clientTurnId = null, updateProblemStatement = true } = {}) {
     const session = await this.get(sessionId);
     const message = createUserMessage({
       messageId: `message_${this.idFactory()}`,
@@ -53,7 +53,7 @@ export class SessionService {
       now: this.now,
     });
     session.raw_messages.push(message);
-    if (!session.current_understanding.problem_statement) {
+    if (updateProblemStatement && !session.current_understanding.problem_statement) {
       session.current_understanding.problem_statement = message.text;
     }
     session.updated_at = this.now().toISOString();

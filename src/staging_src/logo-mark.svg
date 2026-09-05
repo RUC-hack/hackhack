@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" fill="none">
+  <title>见众四人标志</title>
+  <g fill="#000">
+    <circle cx="22" cy="13" r="8"/>
+    <circle cx="78" cy="13" r="8"/>
+    <circle cx="35" cy="75" r="8"/>
+    <circle cx="65" cy="75" r="8"/>
+  </g>
+  <g stroke="#000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 60V35c0-9 5-12 11-4 9 13 17 20 25 20s17-7 26-20c5-8 10-5 10 4v25"/>
+    <path d="M7 111h21c12 0 17-8 17-20 0-10-5-13-10-4-7 12-16 21-28 24Z"/>
+    <path d="M93 111H72c-12 0-17-8-17-20 0-10 5-13 10-4 7 12 16 21 28 24Z"/>
+  </g>
+</svg>

@@ -57,11 +57,12 @@ export class ValidatedLlmGateway {
     return { ...(this.client.status?.() ?? { provider: "llm", configured: true }), validation: "contract-and-source-ids", max_repair_attempts: this.maxRepairAttempts };
   }
 
-  async #validated(type, input, signal) {
+  async #validated(type, input, { signal, requestId = null, metrics = null } = {}) {
     const basePrompt = type === "decision" ? buildDecisionPrompt(input) : buildAnswerPrompt(input);
     const invalidCode = type === "decision" ? "LLM_INVALID_RESPONSE" : "ANSWER_INVALID";
     let invalidValue = null;
     let errors = ["model_output_unavailable"];
+    const sessionId = type === "decision" ? input?.session_id : input?.session?.session_id;
 
     for (let attempt = 0; attempt <= this.maxRepairAttempts; attempt += 1) {
       try {
@@ -71,6 +72,13 @@ export class ValidatedLlmGateway {
             ? (type === "decision" ? "根据当前会话决定下一步。" : "根据证据生成当前综合。")
             : repairUser(type, invalidValue, errors),
           signal,
+          requestId,
+          sessionId,
+          stage: type,
+          callLabel: `${type}_validation_${attempt + 1}`,
+          onMetrics: (metric) => {
+            if (Array.isArray(metrics)) metrics.push(metric);
+          },
         });
         const validation = validate(type, value, input);
         if (validation.valid) return value;
@@ -89,12 +97,12 @@ export class ValidatedLlmGateway {
     throw appError(invalidCode, { details: { errors } });
   }
 
-  decideNextAction(sessionView, { signal } = {}) {
-    return this.#validated("decision", sessionView, signal);
+  decideNextAction(sessionView, options = {}) {
+    return this.#validated("decision", sessionView, options);
   }
 
-  buildGroundedAnswer(answerInput, { signal } = {}) {
-    return this.#validated("answer", answerInput, signal);
+  buildGroundedAnswer(answerInput, options = {}) {
+    return this.#validated("answer", answerInput, options);
   }
 }
 

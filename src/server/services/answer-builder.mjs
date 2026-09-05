@@ -11,7 +11,7 @@ export class AnswerBuilder {
     this.llmGateway = llmGateway;
   }
 
-  async build({ session, evidencePackets = [], sources = [], retrievalMeta = {}, signal } = {}) {
+  async build({ session, evidencePackets = [], sources = [], retrievalMeta = {}, signal, requestId = null, metrics = null } = {}) {
     const validPackets = evidencePackets.filter((packet) => packet.status !== "stale" && packet.status !== "rejected");
     const packetSourceIds = new Set(validPackets.map((packet) => packet.source_id));
     const availableSourceIds = new Set(sources.map((source) => source.source_id));
@@ -29,7 +29,7 @@ export class AnswerBuilder {
     };
     let answer;
     try {
-      answer = await this.llmGateway.buildGroundedAnswer(input, { signal });
+      answer = await this.llmGateway.buildGroundedAnswer(input, { signal, requestId, metrics });
     } catch (error) {
       if (error?.code) throw error;
       throw appError("ANSWER_INVALID", { cause: error });

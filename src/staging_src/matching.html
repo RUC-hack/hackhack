@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10271f">
+  <title>正在寻找相似经历｜见众</title>
+  <meta name="description" content="见众正在从人生样本中寻找与你拥有相似经历的人。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="journey.css">
+</head>
+<body class="journey-page journey-matching-page" data-journey-page="matching">
+  <a class="skip-link" href="#journey-main">跳至正文</a>
+  <header class="journey-header">
+    <a class="brand" href="index.html#top" aria-label="返回见众首页"><svg class="brand-mark" viewBox="0 0 100 120" fill="none" aria-hidden="true" focusable="false"><g fill="currentColor"><circle cx="22" cy="13" r="8"/><circle cx="78" cy="13" r="8"/><circle cx="35" cy="75" r="8"/><circle cx="65" cy="75" r="8"/></g><g stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 60V35c0-9 5-12 11-4 9 13 17 20 25 20s17-7 26-20c5-8 10-5 10 4v25"/><path d="M7 111h21c12 0 17-8 17-20 0-10-5-13-10-4-7 12-16 21-28 24Z"/><path d="M93 111H72c-12 0-17-8-17-20 0-10 5-13 10-4 7 12 16 21 28 24Z"/></g></svg><span>见众</span></a>
+    <span class="journey-step">02 / 03</span>
+  </header>
+  <main id="journey-main" class="journey-matching" aria-live="polite">
+    <div class="journey-matching-copy">
+      <p class="eyebrow">SEARCHING THE HUMAN ARCHIVE</p>
+      <h1>正在寻找可能与你有<br>相似经历的朋友……</h1>
+      <ol class="journey-analysis" id="matching-stages"></ol>
+      <p class="journey-match-result" id="matching-result">正在让你的问题进入一片更大的人生样本。</p>
+    </div>
+    <div class="journey-crowd-stream" id="crowd-stream" aria-hidden="true"></div>
+  </main>
+  <script src="journey-data.js"></script>
+  <script src="journey.js"></script>
+</body>
+</html>

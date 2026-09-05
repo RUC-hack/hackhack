@@ -18,7 +18,7 @@ export class LlmClient {
     timeoutMs = 60_000,
     maxRetries = 1,
     temperature = 0,
-    maxTokens = 1_200,
+    maxTokens = 16_000,
     fetchImpl = globalThis.fetch,
     sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
   } = {}) {

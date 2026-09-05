@@ -17,6 +17,37 @@ function normalizeQueries(queries, fallback) {
   return (values.length ? values : [fallback]).slice(0, 4);
 }
 
+function sumKnown(metrics, field) {
+  const values = metrics.map((metric) => Number(metric?.[field])).filter((value) => Number.isFinite(value) && value >= 0);
+  return values.length ? values.reduce((sum, value) => sum + value, 0) : null;
+}
+
+function summarizeLlmMetricGroup(metrics) {
+  return {
+    call_count: metrics.length,
+    latency_ms: sumKnown(metrics, "latency_ms") ?? 0,
+    prompt_tokens: sumKnown(metrics, "prompt_tokens"),
+    completion_tokens: sumKnown(metrics, "completion_tokens"),
+    total_tokens: sumKnown(metrics, "total_tokens"),
+    usage_available_calls: metrics.filter((metric) => metric?.usage_available).length,
+    usage_missing_calls: metrics.filter((metric) => !metric?.usage_available).length,
+  };
+}
+
+function summarizeLlmMetrics(metrics = []) {
+  const values = Array.isArray(metrics) ? metrics : [];
+  const byStage = new Map();
+  for (const metric of values) {
+    const stage = metric?.stage || "unknown";
+    if (!byStage.has(stage)) byStage.set(stage, []);
+    byStage.get(stage).push(metric);
+  }
+  return {
+    ...summarizeLlmMetricGroup(values),
+    by_stage: Object.fromEntries([...byStage.entries()].map(([stage, stageMetrics]) => [stage, summarizeLlmMetricGroup(stageMetrics)])),
+  };
+}
+
 export class AgentOrchestrator {
   constructor({
     sessionService,
@@ -58,6 +89,20 @@ export class AgentOrchestrator {
     try { await this.logger.log(event); } catch { /* audit logging is best effort for the business flow */ }
   }
 
+  async #logTurnCompleted({ requestId, sessionId, messageId, result, startedAt, llmMetrics }) {
+    await this.#log({
+      event_type: "turn_completed",
+      request_id: requestId,
+      session_id: sessionId,
+      stage: result.action,
+      message_id: messageId,
+      state: result.state,
+      source_ids: result.retrieval?.source_ids ?? [],
+      latency_ms: Math.max(0, Math.round(performance.now() - startedAt)),
+      llm_metrics: summarizeLlmMetrics(llmMetrics),
+    });
+  }
+
   async handleMessage(sessionId, options = {}) {
     const clientTurnId = options.clientTurnId ?? null;
     if (!clientTurnId) return this.#handleMessage(sessionId, options);
@@ -78,8 +123,13 @@ export class AgentOrchestrator {
     if (existingResult) return existingResult;
 
     const startedAt = performance.now();
+    const llmMetrics = [];
     const safety = this.safetyService.check(text);
-    const appended = await this.sessionService.appendUserMessage(sessionId, { text, clientTurnId });
+    const appended = await this.sessionService.appendUserMessage(sessionId, {
+      text,
+      clientTurnId,
+      updateProblemStatement: safety.preserve_context !== false,
+    });
     session = appended.session;
     const message = appended.message;
     await this.#log({
@@ -102,6 +152,7 @@ export class AgentOrchestrator {
         state: session.status,
       };
       await this.sessionService.saveTurnResult(session, clientTurnId, result);
+      await this.#logTurnCompleted({ requestId, sessionId, messageId: message.message_id, result, startedAt, llmMetrics });
       return result;
     }
 
@@ -132,6 +183,7 @@ export class AgentOrchestrator {
           state: session.status,
         };
         await this.sessionService.saveTurnResult(session, clientTurnId, result);
+        await this.#logTurnCompleted({ requestId, sessionId, messageId: message.message_id, result, startedAt, llmMetrics });
         return result;
       }
       const result = {
@@ -144,6 +196,7 @@ export class AgentOrchestrator {
         state: session.status,
       };
       await this.sessionService.saveTurnResult(session, clientTurnId, result);
+      await this.#logTurnCompleted({ requestId, sessionId, messageId: message.message_id, result, startedAt, llmMetrics });
       return result;
     }
 
@@ -159,6 +212,7 @@ export class AgentOrchestrator {
         state: session.status,
       };
       await this.sessionService.saveTurnResult(session, clientTurnId, result);
+      await this.#logTurnCompleted({ requestId, sessionId, messageId: message.message_id, result, startedAt, llmMetrics });
       return result;
     }
 
@@ -182,11 +236,11 @@ export class AgentOrchestrator {
 
     let decision;
     try {
-      decision = assertAgentDecision(await this.llmGateway.decideNextAction(publicSessionView(session), { signal, requestId }));
+      decision = assertAgentDecision(await this.llmGateway.decideNextAction(publicSessionView(session), { signal, requestId, metrics: llmMetrics }));
     } catch (error) {
       this.#setStatus(session, "FAILED_RECOVERABLE");
       await this.sessionService.save(session);
-      await this.#log({ event_type: "orchestrator_failed", request_id: requestId, session_id: sessionId, stage: "decision", error_code: error.code ?? "LLM_INVALID_RESPONSE" });
+      await this.#log({ event_type: "orchestrator_failed", request_id: requestId, session_id: sessionId, stage: "decision", error_code: error.code ?? "LLM_INVALID_RESPONSE", latency_ms: Math.max(0, Math.round(performance.now() - startedAt)), llm_metrics: summarizeLlmMetrics(llmMetrics) });
       throw error.code ? error : appError("LLM_INVALID_RESPONSE", { cause: error });
     }
     session.current_understanding.blocking_unknowns = clone(decision.blocking_unknowns ?? []);
@@ -211,6 +265,7 @@ export class AgentOrchestrator {
         this.#setStatus(session, "COLLECTING_CONTEXT");
         const result = { action: "ask", session_id: sessionId, message_id: message.message_id, decision: clone(decision), state: session.status };
         await this.sessionService.saveTurnResult(session, clientTurnId, result);
+        await this.#logTurnCompleted({ requestId, sessionId, messageId: message.message_id, result, startedAt, llmMetrics });
         return result;
       }
     }
@@ -219,6 +274,7 @@ export class AgentOrchestrator {
       this.#setStatus(session, "CONFIRMING_TOPIC");
       const result = { action: "confirm_topic", session_id: sessionId, message_id: message.message_id, decision: clone(decision), state: session.status };
       await this.sessionService.saveTurnResult(session, clientTurnId, result);
+      await this.#logTurnCompleted({ requestId, sessionId, messageId: message.message_id, result, startedAt, llmMetrics });
       return result;
     }
 
@@ -226,6 +282,7 @@ export class AgentOrchestrator {
       this.#setStatus(session, "SAFETY_HANDLING");
       const result = { action: "safety", session_id: sessionId, message_id: message.message_id, decision: clone(decision), state: session.status };
       await this.sessionService.saveTurnResult(session, clientTurnId, result);
+      await this.#logTurnCompleted({ requestId, sessionId, messageId: message.message_id, result, startedAt, llmMetrics });
       return result;
     }
 
@@ -261,6 +318,8 @@ export class AgentOrchestrator {
         sources: await this.sourceStore.list(),
         retrievalMeta: retrievalResult.meta,
         signal,
+        requestId,
+        metrics: llmMetrics,
       });
       for (const packet of session.evidence_packets) {
         if (packet.status !== "stale" && packet.status !== "rejected") packet.status = "used";
@@ -288,6 +347,8 @@ export class AgentOrchestrator {
           sources: await this.sourceStore.list(),
           retrievalMeta: { provider: "existing" },
           signal,
+          requestId,
+          metrics: llmMetrics,
         });
         session.current_answer = answer;
         session.answer_history.push({ answer_id: `answer_${this.idFactory()}`, created_at: this.now().toISOString(), context_version: session.context_version, answer });
@@ -303,20 +364,13 @@ export class AgentOrchestrator {
         session_id: sessionId,
         stage: decision.action,
         error_code: error.code ?? "RETRIEVAL_FAILED",
+        latency_ms: Math.max(0, Math.round(performance.now() - startedAt)),
+        llm_metrics: summarizeLlmMetrics(llmMetrics),
       });
       throw error;
     }
     await this.sessionService.saveTurnResult(session, clientTurnId, result);
-    await this.#log({
-      event_type: "turn_completed",
-      request_id: requestId,
-      session_id: sessionId,
-      stage: result.action,
-      message_id: message.message_id,
-      state: session.status,
-      source_ids: result.retrieval?.source_ids ?? [],
-      latency_ms: Math.round(performance.now() - startedAt),
-    });
+    await this.#logTurnCompleted({ requestId, sessionId, messageId: message.message_id, result, startedAt, llmMetrics });
     return result;
   }
 }

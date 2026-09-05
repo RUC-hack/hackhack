@@ -20,6 +20,26 @@ test("validated gateway gives the model concrete decision errors and the invalid
   assert.match(requests[1].user, /不应检索/u);
 });
 
+test("validated gateway forwards per-round telemetry to every model call", async () => {
+  const requests = [];
+  const metrics = [];
+  const gateway = new ValidatedLlmGateway({ client: { async chatJson(request) {
+    requests.push(request);
+    request.onMetrics?.({ stage: request.stage, usage_available: true, prompt_tokens: 10, completion_tokens: 5, total_tokens: 15, latency_ms: 3 });
+    return requests.length === 1
+      ? { action: "ask", reason: "信息不足", blocking_unknowns: ["具体选项"], queries: ["不应检索"], assumptions: [] }
+      : { action: "ask", reason: "信息不足", blocking_unknowns: ["具体选项"], question: { text: "你在比较哪两个选项？" }, queries: [], assumptions: [] };
+  } } });
+
+  await gateway.decideNextAction({ session_id: "session-telemetry", raw_messages: [] }, { requestId: "req-telemetry", metrics });
+  assert.equal(requests.length, 2);
+  assert.equal(metrics.length, 2);
+  assert.deepEqual(requests.map((request) => ({ requestId: request.requestId, sessionId: request.sessionId, stage: request.stage })), [
+    { requestId: "req-telemetry", sessionId: "session-telemetry", stage: "decision" },
+    { requestId: "req-telemetry", sessionId: "session-telemetry", stage: "decision" },
+  ]);
+});
+
 test("validated gateway repairs answer citations before they reach AnswerBuilder", async () => {
   let calls = 0;
   const base = { summary: "参照", sections: [{ kind: "case", title: "经历", content: "材料中的经历", source_ids: ["not-allowed"] }], assumptions: [], unknowns: [], limitations: ["样本有限，这不是预测"], next_actions: [] };

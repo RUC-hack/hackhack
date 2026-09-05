@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { LlmClient } from "../../src/server/integrations/llm-client.mjs";
+import { ResilientLlmClient } from "../../src/server/integrations/resilient-llm-client.mjs";
 import { LlmGateway } from "../../src/server/services/llm-gateway.mjs";
 
 function response(body, status = 200) {
@@ -21,6 +22,46 @@ test("LLM client sends structured JSON requests without exposing the API key in 
   assert.deepEqual(value, { ok: true });
   assert.match(captured.options.headers.Authorization, /Bearer sk-test/u);
   assert.equal(captured.options.body.includes("sk-test-secret-value"), false);
+});
+
+test("resilient LLM client records call latency and token usage without logging prompt content", async () => {
+  const metrics = [];
+  const logs = [];
+  const client = new ResilientLlmClient({
+    apiKey: "sk-test-secret-value",
+    maxRetries: 0,
+    logger: { async log(event) { logs.push(event); } },
+    fetchImpl: async () => response({
+      choices: [{ message: { content: JSON.stringify({ ok: true }) } }],
+      usage: { prompt_tokens: 31, completion_tokens: 17, total_tokens: 48 },
+    }),
+  });
+
+  const value = await client.chatJson({
+    system: "不要把这段规则写进日志",
+    user: "包含用户上下文的提示",
+    requestId: "req-telemetry",
+    sessionId: "session-telemetry",
+    stage: "decision",
+    callLabel: "decision_validation_1",
+    onMetrics: (metric) => metrics.push(metric),
+  });
+
+  assert.deepEqual(value, { ok: true });
+  assert.equal(metrics.length, 1);
+  assert.equal(metrics[0].provider, "deepseek");
+  assert.equal(metrics[0].stage, "decision");
+  assert.equal(metrics[0].attempt, 1);
+  assert.equal(metrics[0].latency_ms >= 0, true);
+  assert.deepEqual({
+    prompt_tokens: metrics[0].prompt_tokens,
+    completion_tokens: metrics[0].completion_tokens,
+    total_tokens: metrics[0].total_tokens,
+  }, { prompt_tokens: 31, completion_tokens: 17, total_tokens: 48 });
+  assert.equal(logs.length, 1);
+  assert.equal(logs[0].event_type, "llm_call_completed");
+  assert.equal("system" in logs[0], false);
+  assert.equal("user" in logs[0], false);
 });
 
 test("invalid model JSON is repaired at most once and then validated", async () => {

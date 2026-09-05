@@ -12,6 +12,8 @@ npm start
 
 启动后访问 `http://localhost:8080`，问答测试页为 `http://localhost:8080/qa.html`，后端健康检查为 `http://localhost:3000/api/health`。也可以分别运行 `npm run start:backend` 和 `npm run start:frontend`。
 
+`qa.html` 默认自动分流：毕业、就业、求职、读博等已有主题使用本地精选内容完成“问题—追问—路径—知乎公开来源”流程，其他问题进入原有实时后端链路。开发联调时可用 `qa.html?mode=live` 强制实时链路，或用 `qa.html?mode=curated` 强制精选链路。
+
 如果只看静态策展页，直接双击 `index.html` 也可以演示；为避免浏览器对本地资源的限制，也可以在本目录运行：
 
 ```powershell

@@ -18,7 +18,15 @@ test("frontend server serves the main page, QA page, and local images", async (t
 
   const qa = await fetch(`http://127.0.0.1:${port}/qa.html`);
   assert.equal(qa.status, 200);
-  assert.match(await qa.text(), /一段正在展开的对话/u);
+  const qaHtml = await qa.text();
+  assert.match(qaHtml, /一段正在展开的对话/u);
+  assert.match(qaHtml, /staging_src\/journey\.css/u);
+  assert.match(qaHtml, /qa-results/u);
+
+  const figures = await fetch(`http://127.0.0.1:${port}/assets/people/figures.svg`);
+  assert.equal(figures.status, 200);
+  assert.equal(figures.headers.get("content-type"), "image/svg+xml");
+  assert.match(await figures.text(), /symbol id="person-1"/u);
 
   const config = await fetch(`http://127.0.0.1:${port}/app-config.js`);
   assert.equal(config.status, 200);

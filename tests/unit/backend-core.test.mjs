@@ -23,6 +23,21 @@ test("redaction removes credentials without changing business values", () => {
   assert.equal(value.text, "正常内容");
 });
 
+test("redaction preserves numeric LLM token metrics while hiding secret-like keys", () => {
+  const value = redact({
+    prompt_tokens: 31,
+    completion_tokens: 17,
+    total_tokens: 48,
+    access_token: "secret-value",
+    prompt: "不要记录提示词",
+  });
+  assert.equal(value.prompt_tokens, 31);
+  assert.equal(value.completion_tokens, 17);
+  assert.equal(value.total_tokens, 48);
+  assert.equal(value.access_token, "[REDACTED]");
+  assert.equal(value.prompt, "[REDACTED]");
+});
+
 test("same Zhihu cache key shares one in-flight upstream request", async (context) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "hackhack-inflight-"));
   context.after(() => rm(root, { recursive: true, force: true }));

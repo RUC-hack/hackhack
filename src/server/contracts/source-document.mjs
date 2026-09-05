@@ -55,6 +55,8 @@ export function sourcePublicView(document) {
     content_type: document.content_type,
     retrieved_at: document.retrieved_at,
     provider: document.provider,
+    ...(document.metadata?.author_url ? { author_url: document.metadata.author_url } : {}),
+    ...(document.metadata?.author_avatar ? { author_avatar: document.metadata.author_avatar } : {}),
     ...(document.metadata ? { metadata: document.metadata } : {}),
   };
 }

@@ -41,6 +41,17 @@ function plainText(value) {
     .trim();
 }
 
+function optionalHttpsUrl(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  try {
+    const url = new URL(text);
+    return url.protocol === "https:" ? canonicalUrl(text) : "";
+  } catch {
+    return "";
+  }
+}
+
 function asFiniteNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
@@ -68,6 +79,15 @@ export function normalizeZhihuItem(item, retrievedAt) {
   const contentType = String(item.ContentType ?? "unknown").trim().toLowerCase();
   const contentId = String(item.ContentID ?? "").trim();
   const url = canonicalUrl(item.Url);
+  const authorUrl = optionalHttpsUrl(
+    item.AuthorUrl
+      ?? item.AuthorURL
+      ?? item.AuthorProfileUrl
+      ?? item.AuthorProfileURL
+      ?? item.AuthorLink
+      ?? item.AuthorPageUrl,
+  );
+  const authorAvatar = optionalHttpsUrl(item.AuthorAvatar);
   return {
     source_id: contentId ? `zhihu:${contentType}:${contentId}` : `zhihu:url:${sha256(url).slice(0, 24)}`,
     title: String(item.Title ?? "").trim(),
@@ -82,6 +102,8 @@ export function normalizeZhihuItem(item, retrievedAt) {
       vote_up_count: asFiniteNumber(item.VoteUpCount),
       authority_level: asFiniteNumber(item.AuthorityLevel),
       ranking_score: asFiniteNumber(item.RankingScore),
+      ...(authorUrl ? { author_url: authorUrl } : {}),
+      ...(authorAvatar ? { author_avatar: authorAvatar } : {}),
     },
   };
 }
@@ -357,7 +379,7 @@ export function createZhihuProviderFromEnv(env = process.env, overrides = {}) {
   const client = overrides.client ?? new ZhihuSearchClient({
     accessSecret: env.ZHIHU_ACCESS_SECRET,
     baseUrl: env.ZHIHU_API_BASE_URL || "https://developer.zhihu.com",
-    timeoutMs: envInteger(env.ZHIHU_TIMEOUT_MS, 15_000, {
+    timeoutMs: envInteger(env.ZHIHU_TIMEOUT_MS, 30_000, {
       minimum: 1_000,
       maximum: 120_000,
       name: "ZHIHU_TIMEOUT_MS",

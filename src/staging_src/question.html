@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#173d35">
+  <title>写下你的问题｜见众</title>
+  <meta name="description" content="写下一个让你纠结很久的人生问题，从相似人生中寻找参照。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="journey.css">
+</head>
+<body class="journey-page journey-question-page" data-journey-page="question">
+  <a class="skip-link" href="#journey-main">跳至正文</a>
+  <header class="journey-header">
+    <a class="brand" href="index.html#top" aria-label="返回见众首页"><svg class="brand-mark" viewBox="0 0 100 120" fill="none" aria-hidden="true" focusable="false"><g fill="currentColor"><circle cx="22" cy="13" r="8"/><circle cx="78" cy="13" r="8"/><circle cx="35" cy="75" r="8"/><circle cx="65" cy="75" r="8"/></g><g stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 60V35c0-9 5-12 11-4 9 13 17 20 25 20s17-7 26-20c5-8 10-5 10 4v25"/><path d="M7 111h21c12 0 17-8 17-20 0-10-5-13-10-4-7 12-16 21-28 24Z"/><path d="M93 111H72c-12 0-17-8-17-20 0-10 5-13 10-4 7 12 16 21 28 24Z"/></g></svg><span>见众</span></a>
+    <span class="journey-step">01 / 03</span>
+  </header>
+  <main id="journey-main" class="journey-question">
+    <form class="journey-question-form" id="question-form" novalidate>
+      <div class="journey-question-heading fade-up visible">
+        <p class="eyebrow">BEGIN WITH A QUESTION</p>
+        <h1>有什么让你纠结了<br>很久的事？</h1>
+        <p>越具体越好。</p>
+      </div>
+      <div class="journey-writing-area fade-up visible delay-1">
+        <label class="sr-only" for="life-question">写下让你纠结很久的事</label>
+        <textarea id="life-question" name="question" rows="8" minlength="8" aria-describedby="question-help question-error" placeholder="比如：我大四要毕业了。是继续读博，去互联网大厂工作，还是回家乡？我担心读博以后年龄越来越大，也担心现在不去工作会错过最好的就业机会。"></textarea>
+        <div class="journey-form-meta">
+          <p id="question-help">至少输入 8 个字符 · 支持 Ctrl / ⌘ + Enter</p>
+          <p class="journey-error" id="question-error" aria-live="polite"></p>
+          <button class="button button-dark" id="question-submit" type="submit" disabled>完成回答 <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+    </form>
+  </main>
+  <script src="journey-data.js"></script>
+  <script src="journey.js"></script>
+</body>
+</html>

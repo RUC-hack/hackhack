@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#173d35">
+  <title>相似人生路径｜见众</title>
+  <meta name="description" content="浏览走过相似道路的人生路径、人物样本与选择之后的真实质感。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="journey.css">
+</head>
+<body class="journey-page journey-paths-page" data-journey-page="paths">
+  <a class="skip-link" href="#journey-main">跳至正文</a>
+  <header class="journey-header journey-header-fixed">
+    <a class="brand" href="index.html#top" aria-label="返回见众首页"><svg class="brand-mark" viewBox="0 0 100 120" fill="none" aria-hidden="true" focusable="false"><g fill="currentColor"><circle cx="22" cy="13" r="8"/><circle cx="78" cy="13" r="8"/><circle cx="35" cy="75" r="8"/><circle cx="65" cy="75" r="8"/></g><g stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 60V35c0-9 5-12 11-4 9 13 17 20 25 20s17-7 26-20c5-8 10-5 10 4v25"/><path d="M7 111h21c12 0 17-8 17-20 0-10-5-13-10-4-7 12-16 21-28 24Z"/><path d="M93 111H72c-12 0-17-8-17-20 0-10 5-13 10-4 7 12 16 21 28 24Z"/></g></svg><span>见众</span></a>
+    <nav class="journey-mini-nav" aria-label="结果页导航"><a href="#paths-list">人生路径</a><a href="#people-pool">人物样本</a><a href="#ask-crowd">问更多人</a></nav>
+    <a class="journey-restart" href="question.html">重新填写</a>
+  </header>
+  <main id="journey-main">
+    <section class="journey-results-hero">
+      <div class="container">
+        <p class="eyebrow">SIMILAR LIVES · MATCHED PATHS</p>
+        <h1>关于「<span id="question-summary"></span>」，<br>TA 们是这样做的……</h1>
+        <p class="journey-results-intro">这里没有一条被计算出的正确道路。先看看不同的人怎样选择、承担，又怎样在后来重新理解当时的自己。</p>
+      </div>
+      <p class="journey-photo-credit">Photo by <a href="https://unsplash.com/@we_are_rising?utm_source=jianzhong_demo&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer">lucas Favre</a> on <a href="https://unsplash.com/photos/BRTV55ErUZg?utm_source=jianzhong_demo&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer">Unsplash</a></p>
+    </section>
+
+    <section class="journey-paths-section" id="paths-list" aria-labelledby="paths-title">
+      <div class="container">
+        <div class="journey-section-title"><p class="eyebrow">01 · FIVE DIRECTIONS</p><h2 id="paths-title">有哪几条路？</h2></div>
+        <div class="journey-path-list" id="path-list"></div>
+      </div>
+    </section>
+
+    <section class="journey-people-section" id="people-pool" aria-labelledby="people-title">
+      <div class="container">
+        <header class="journey-people-heading">
+          <p class="eyebrow">02 · PEOPLE ON THIS PATH</p>
+          <h2 id="people-title">这条路上的人</h2>
+          <p id="people-description"></p>
+        </header>
+        <div class="journey-people-layout">
+          <div class="journey-person-list" id="person-list" role="listbox" aria-label="选择一位人生样本"></div>
+          <article class="journey-person-detail" id="person-detail" aria-live="polite"></article>
+        </div>
+        <p class="content-note">当前人物与经历为交互演示数据。正式产品中的人生样本将基于经授权或公开可用的信息建立，并保留来源与引用关系。</p>
+      </div>
+    </section>
+
+    <section class="journey-crowd-question" id="ask-crowd" aria-labelledby="crowd-title">
+      <div class="container narrow">
+        <p class="eyebrow">ASK THE CROWD</p>
+        <h2 id="crowd-title">想问问更多人？</h2>
+        <p>生成一条独属于你的想法，等待更多路过的人讲讲他们走过的路。</p>
+        <button class="button button-light" id="open-crowd-composer" type="button">生成公开提问 <span aria-hidden="true">→</span></button>
+        <div class="journey-crowd-composer" id="crowd-composer" hidden></div>
+      </div>
+      <p class="journey-photo-credit">Photo by <a href="https://unsplash.com/@miinyuii?utm_source=jianzhong_demo&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer">Duy Pham</a> on <a href="https://unsplash.com/@miinyuii?utm_source=jianzhong_demo&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer">Unsplash</a></p>
+    </section>
+  </main>
+  <script src="journey-data.js"></script>
+  <script src="journey.js"></script>
+</body>
+</html>
