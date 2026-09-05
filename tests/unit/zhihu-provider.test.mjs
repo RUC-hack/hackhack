@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -44,10 +44,10 @@ test("provider normalizes, deduplicates, caches, and writes redacted logs", asyn
   assert.equal(first.documents[0].provider, "zhihu");
   assert.equal(first.documents[0].summary, "我先工作两年，后来重新读研。这个摘要只作为测试数据。");
 
-  const logText = await readFile(path.join(temporaryRoot, "logs", "zhihu", "2026-09-04.jsonl"), "utf8");
+  const logText = await readFile(path.join(temporaryRoot, "logs", "zhihu", "2026-09-04", "request-request-1.jsonl"), "utf8");
   assert.equal(logText.includes("test-secret-must-not-appear"), false);
   assert.equal(logText.includes("考研还是工作"), false);
-  assert.equal(logText.trim().split(/\r?\n/u).length, 2);
+  assert.equal(logText.trim().split(/\r?\n/u).length, 1);
 });
 
 test("provider exposes a stable rate-limit error and does not hide it", async (context) => {
@@ -101,4 +101,16 @@ test("provider refuses live calls when the application safety gate is closed", a
     (error) => error.code === "ZHIHU_LIVE_CALLS_DISABLED",
   );
   assert.equal(called, false);
+});
+
+test("log write failure does not replace the classified upstream error", async (context) => {
+  const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "hackhack-zhihu-log-failure-"));
+  context.after(() => rm(temporaryRoot, { recursive: true, force: true }));
+  const blockedLogPath = path.join(temporaryRoot, "log-blocker");
+  await writeFile(blockedLogPath, "not a directory", "utf8");
+  const provider = new ZhihuProvider({
+    client: { accessSecret: "test-secret", async search() { throw new ZhihuSearchError("rate limited", { code: "ZHIHU_RATE_LIMITED", providerCode: 30001 }); } },
+    cacheDir: path.join(temporaryRoot, "cache"), logDir: blockedLogPath, now: () => new Date("2026-09-04T12:00:00.000Z"),
+  });
+  await assert.rejects(provider.search("考研"), (error) => error.code === "ZHIHU_RATE_LIMITED");
 });

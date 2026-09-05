@@ -29,7 +29,11 @@ function asBoolean(value, name, errors) {
 }
 
 function asInteger(value, name, minimum, maximum, errors) {
-  const parsed = Number.parseInt(value, 10);
+  if (!/^[+-]?\d+$/u.test(String(value ?? "").trim())) {
+    errors.push(`${name}_OUT_OF_RANGE`);
+    return null;
+  }
+  const parsed = Number(String(value).trim());
   if (!Number.isInteger(parsed) || parsed < minimum || parsed > maximum) {
     errors.push(`${name}_OUT_OF_RANGE`);
     return null;
@@ -59,7 +63,7 @@ try {
 const errors = [];
 const warnings = [];
 const allowedAppEnvs = new Set(["development", "test", "production"]);
-const allowedProviders = new Set(["mock", "zhihu"]);
+const allowedProviders = new Set(["mock", "local", "zhihu"]);
 const allowedExperimentModes = new Set(["dry-run", "smoke", "full"]);
 const allowedLogLevels = new Set(["debug", "info", "warn", "error"]);
 

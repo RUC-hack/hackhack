@@ -29,24 +29,26 @@ Kevin
 
 | ID | 优先级 | 状态 | 问题 | 影响模块 |
 |---|---:|---|---|---|
-| `BE-001` | P1 | OPEN | 非对象 Item 导致响应校验器抛异常并误分类 | Zhihu Client |
-| `BE-002` | P1 | OPEN | 日志写入失败会覆盖原始上游错误 | Zhihu Provider / 降级 |
-| `BE-003` | P1 | OPEN | 尚无前端可调用的 HTTP API | API / Composition Root |
-| `BE-004` | P1 | OPEN | 本地与 Mock Provider 未实现、未装配 | Retrieval / Demo 降级 |
-| `BE-005` | P2 | OPEN | 相同查询并发时可能重复调用知乎 | Cache / 配额 |
-| `BE-006` | P2 | OPEN | Provider 没有透传取消信号 | 请求生命周期 |
-| `BE-007` | P2 | OPEN | 去重键优先 URL，不能稳定按内容去重 | Zhihu Provider |
-| `BE-008` | P2 | OPEN | `ContentText` 的 HTML 语义没有进入契约 | Source / 前端安全 |
-| `BE-009` | P2 | OPEN | 响应校验只检查字段存在，不检查类型 | Zhihu Client |
-| `BE-010` | P2 | OPEN | 缓存写入位于成功请求的关键路径 | Cache / 可用性 |
-| `BE-011` | P2 | OPEN | 产品降级来源被硬编码为 `zhihu` | Retrieval Service |
-| `BE-012` | P2 | OPEN | 日志路径和结构与 XAI 设计不一致 | Logs / 文档契约 |
-| `BE-013` | P3 | OPEN | `test:zhihu` 漏跑 RetrievalService 测试 | Test Script |
-| `BE-014` | P3 | OPEN | 查询哈希不是匿名化，缺少隐私说明 | Logs / Privacy |
-| `BE-015` | P3 | OPEN | 环境整数解析接受尾随非法字符 | Config |
-| `BE-016` | P2 | OPEN | 尚无真实知乎与大模型连通性冒烟测试 | Integration / Release |
+| `BE-001` | P1 | RESOLVED | 非对象 Item 导致响应校验器抛异常并误分类 | Zhihu Client |
+| `BE-002` | P1 | RESOLVED | 日志写入失败会覆盖原始上游错误 | Zhihu Provider / 降级 |
+| `BE-003` | P1 | RESOLVED | 尚无前端可调用的 HTTP API | API / Composition Root |
+| `BE-004` | P1 | RESOLVED | 本地与 Mock Provider 未实现、未装配 | Retrieval / Demo 降级 |
+| `BE-005` | P2 | RESOLVED | 相同查询并发时可能重复调用知乎 | Cache / 配额 |
+| `BE-006` | P2 | RESOLVED | Provider 没有透传取消信号 | 请求生命周期 |
+| `BE-007` | P2 | RESOLVED | 去重键优先 URL，不能稳定按内容去重 | Zhihu Provider |
+| `BE-008` | P2 | RESOLVED | `ContentText` 的 HTML 语义没有进入契约 | Source / 前端安全 |
+| `BE-009` | P2 | RESOLVED | 响应校验只检查字段存在，不检查类型 | Zhihu Client |
+| `BE-010` | P2 | RESOLVED | 缓存写入位于成功请求的关键路径 | Cache / 可用性 |
+| `BE-011` | P2 | RESOLVED | 产品降级来源被硬编码为 `zhihu` | Retrieval Service |
+| `BE-012` | P2 | RESOLVED | 日志路径和结构与 XAI 设计不一致 | Logs / 文档契约 |
+| `BE-013` | P3 | RESOLVED | `test:zhihu` 漏跑 RetrievalService 测试 | Test Script |
+| `BE-014` | P3 | RESOLVED | 查询哈希不是匿名化，缺少隐私说明 | Logs / Privacy |
+| `BE-015` | P3 | RESOLVED | 环境整数解析接受尾随非法字符 | Config |
+| `BE-016` | P2 | ACCEPTED_RISK | 尚无真实知乎与大模型连通性冒烟测试 | Integration / Release |
 
 ## 三、详细问题
+
+本轮后端闭环已完成 B0–B10：对应实现位于 `src/server/`，离线验证覆盖契约、Provider、存储、LLM 校验、状态机和 HTTP 集成。`BE-016` 保留为 `ACCEPTED_RISK`，因为真实 smoke 需要开发者显式提供现场凭证；命令已提供但未在默认测试中执行。
 
 ### BE-001：非对象 Item 导致响应校验器抛异常并误分类
 

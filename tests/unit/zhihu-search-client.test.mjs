@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   ZhihuSearchClient,
+  errorFromZhihuResponse,
   validateZhihuSearchResponse,
 } from "../../src/server/integrations/zhihu-search-client.mjs";
 import { successResponse, zhihuItem } from "../fixtures/zhihu-search-response.mjs";
@@ -82,4 +83,32 @@ test("schema validation reports missing source fields", () => {
   const validation = validateZhihuSearchResponse(successResponse([item]));
   assert.equal(validation.valid, false);
   assert.deepEqual(validation.errors, ["item_0_missing_Url"]);
+});
+
+test("non-object items are classified as invalid responses without retry", async () => {
+  let calls = 0;
+  const client = new ZhihuSearchClient({
+    accessSecret: "test-secret",
+    maxRetries: 3,
+    sleep: async () => {},
+    fetchImpl: async () => { calls += 1; return jsonResponse({ Code: 0, Data: { Items: [null, "not-an-item", []] } }); },
+  });
+  await assert.rejects(client.search({ query: "坏响应", count: 1 }), (error) => error.code === "ZHIHU_INVALID_RESPONSE");
+  assert.equal(calls, 1);
+});
+
+test("provider forwards an AbortSignal to the client", async () => {
+  let receivedSignal;
+  const client = new ZhihuSearchClient({
+    accessSecret: "test-secret",
+    fetchImpl: async (_url, options) => { receivedSignal = options.signal; return jsonResponse(successResponse()); },
+  });
+  const signal = new AbortController().signal;
+  await client.search({ query: "取消信号", count: 1, signal });
+  assert.ok(receivedSignal instanceof AbortSignal);
+});
+
+test("valid JSON with an invalid top-level shape is not misclassified as a business error", () => {
+  const result = { transportOk: true, httpStatus: 200, body: null, parseError: null, validation: { valid: false, errors: ["response_not_object"] } };
+  assert.equal(errorFromZhihuResponse(result).code, "ZHIHU_INVALID_RESPONSE");
 });

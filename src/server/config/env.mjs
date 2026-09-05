@@ -51,7 +51,9 @@ export function envBoolean(value, fallback = false) {
 
 export function envInteger(value, fallback, { minimum, maximum, name = "value" } = {}) {
   if (value === undefined || value === "") return fallback;
-  const parsed = Number.parseInt(value, 10);
+  const normalized = String(value).trim();
+  if (!/^[+-]?\d+$/u.test(normalized)) throw new Error(`${name} must be an integer`);
+  const parsed = Number(normalized);
   if (!Number.isInteger(parsed)) throw new Error(`${name} must be an integer`);
   if (minimum !== undefined && parsed < minimum) throw new Error(`${name} must be >= ${minimum}`);
   if (maximum !== undefined && parsed > maximum) throw new Error(`${name} must be <= ${maximum}`);

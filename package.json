@@ -4,8 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test",
-    "test:zhihu": "node --test tests/unit/zhihu-search-client.test.mjs tests/unit/zhihu-provider.test.mjs",
+    "start": "node src/server/main.mjs",
+    "test": "node --test --test-isolation=none \"tests/**/*.test.mjs\"",
+    "test:unit": "node --test --test-isolation=none \"tests/unit/*.test.mjs\"",
+    "test:contract": "node --test --test-isolation=none \"tests/contract/*.test.mjs\"",
+    "test:integration": "node --test --test-isolation=none \"tests/integration/*.test.mjs\"",
+    "test:quality": "node --test --test-isolation=none \"tests/quality/*.test.mjs\"",
+    "test:zhihu": "node --test --test-isolation=none tests/unit/zhihu-search-client.test.mjs tests/unit/zhihu-provider.test.mjs tests/unit/retrieval-service.test.mjs",
+    "test:smoke": "node scripts/smoke.mjs",
+    "test:smoke:live": "node scripts/smoke.mjs --live",
     "experiment:zhihu": "node experiments/zhihu-retrieval-loop/run-experiment.mjs"
   }
 }

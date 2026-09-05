@@ -53,18 +53,46 @@ export function validateZhihuSearchResponse(body) {
     return { valid: false, errors: ["response_not_object"], itemCount: 0 };
   }
   if (body.Code !== 0) errors.push(`business_code_${String(body.Code)}`);
+  if (!body.Data || typeof body.Data !== "object" || Array.isArray(body.Data)) errors.push("data_not_object");
   if (!Array.isArray(body?.Data?.Items)) errors.push("items_not_array");
 
   const items = Array.isArray(body?.Data?.Items) ? body.Data.Items : [];
   items.forEach((item, index) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      errors.push(`item_${index}_not_object`);
+      return;
+    }
     for (const field of ZHIHU_SEARCH_REQUIRED_ITEM_FIELDS) {
-      if (!(field in item)) errors.push(`item_${index}_missing_${field}`);
+      if (!(field in item) || item[field] === null || item[field] === undefined) {
+        errors.push(`item_${index}_missing_${field}`);
+      }
+    }
+    if (item.Title !== undefined && item.Title !== null && typeof item.Title !== "string") errors.push(`item_${index}_Title_must_be_string`);
+    if (item.ContentType !== undefined && item.ContentType !== null && typeof item.ContentType !== "string") errors.push(`item_${index}_ContentType_must_be_string`);
+    if (item.ContentID !== undefined && item.ContentID !== null && !(typeof item.ContentID === "string" || typeof item.ContentID === "number")) errors.push(`item_${index}_ContentID_must_be_string_or_number`);
+    if (item.ContentText !== undefined && item.ContentText !== null && typeof item.ContentText !== "string") errors.push(`item_${index}_ContentText_must_be_string`);
+    if (item.Url !== undefined && item.Url !== null && typeof item.Url !== "string") errors.push(`item_${index}_Url_must_be_string`);
+    if (typeof item.Url === "string") {
+      try {
+        const url = new URL(item.Url);
+        if (url.protocol !== "https:" || !/(^|\.)zhihu\.com$/iu.test(url.hostname)) errors.push(`item_${index}_Url_must_be_zhihu_https_url`);
+      } catch {
+        errors.push(`item_${index}_Url_must_be_url`);
+      }
+    }
+    if (item.AuthorName !== undefined && item.AuthorName !== null && typeof item.AuthorName !== "string") errors.push(`item_${index}_AuthorName_must_be_string`);
+    for (const field of ["VoteUpCount", "AuthorityLevel", "RankingScore"]) {
+      if (item[field] !== undefined && item[field] !== null && !(typeof item[field] === "number" || typeof item[field] === "string")) errors.push(`item_${index}_${field}_must_be_number`);
+      else if (item[field] !== undefined && item[field] !== null && !Number.isFinite(Number(item[field]))) errors.push(`item_${index}_${field}_must_be_number`);
     }
   });
   return { valid: errors.length === 0, errors, itemCount: items.length };
 }
 
 export function errorFromZhihuResponse(result) {
+  if (!result || typeof result !== "object") {
+    return new ZhihuSearchError("Zhihu response is missing", { code: "ZHIHU_INVALID_RESPONSE", retryable: false });
+  }
   if (!result.transportOk) {
     const retryable = result.httpStatus === 429 || (result.httpStatus ?? 0) >= 500;
     return new ZhihuSearchError(`Zhihu HTTP request failed with status ${result.httpStatus}`, {
@@ -81,7 +109,14 @@ export function errorFromZhihuResponse(result) {
     });
   }
 
-  const providerCode = Number.isFinite(result.body?.Code) ? result.body.Code : null;
+  const providerCode = Number.isFinite(Number(result.body?.Code)) ? Number(result.body.Code) : null;
+  if (providerCode === null) {
+    return new ZhihuSearchError("Zhihu response does not contain a valid business code", {
+      code: "ZHIHU_INVALID_RESPONSE",
+      httpStatus: result.httpStatus,
+      retryable: false,
+    });
+  }
   if (providerCode !== 0) {
     const mapped = BUSINESS_ERRORS[providerCode] ?? {
       code: "ZHIHU_BUSINESS_ERROR",
@@ -95,7 +130,7 @@ export function errorFromZhihuResponse(result) {
       retryable: mapped.retryable,
     });
   }
-  if (!result.validation.valid) {
+  if (!result.validation?.valid) {
     return new ZhihuSearchError("Zhihu response does not match the documented schema", {
       code: "ZHIHU_INVALID_RESPONSE",
       providerCode,
@@ -208,6 +243,13 @@ export class ZhihuSearchClient {
         }
         return result;
       } catch (error) {
+        if (signal?.aborted) {
+          throw new ZhihuSearchError("Zhihu request was cancelled", {
+            code: "ZHIHU_CANCELLED",
+            retryable: false,
+            cause: error,
+          });
+        }
         const timedOut = controller.signal.aborted && !signal?.aborted;
         if (attempt < this.maxRetries && !signal?.aborted) {
           await this.sleep(this.retryDelayMs * (2 ** attempt));

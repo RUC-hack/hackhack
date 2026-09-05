@@ -10,7 +10,8 @@ RetrievalService
        -> ZhihuSearchClient
        -> cache
        -> redacted JSONL logs
-  -> LocalDatasetProvider（后续接入）
+  -> LocalDatasetProvider
+  -> MockProvider（测试）
 ```
 
 - `ZhihuSearchClient`：只实现官方 HTTP 契约、超时、有限重试和错误分类。
@@ -97,7 +98,7 @@ const result = await retrieval.search("计算机本科毕业直接工作经历",
 ## 缓存与日志
 
 - 缓存默认写入 `.runtime/cache/zhihu/`，键由 query、limit 和 filters 的哈希构成。
-- 日志默认写入 `.runtime/logs/zhihu/YYYY-MM-DD.jsonl`。
+- 日志默认写入 `logs/zhihu/YYYY-MM-DD/request-<id>.jsonl`；对话日志写入 `logs/conversations/YYYY-MM-DD/session-<id>.jsonl`。
 - 日志只记录 query 哈希和长度，不记录 query 原文、Access Secret 或完整响应。
 - `.runtime/` 由 Git 忽略。
 
@@ -109,4 +110,17 @@ const result = await retrieval.search("计算机本科毕业直接工作经历",
 
 ```powershell
 npm run test:zhihu
+```
+
+启动离线后端：
+
+```powershell
+npm start
+```
+
+接口顺序示例：
+
+```powershell
+$session = Invoke-RestMethod http://localhost:3000/api/sessions -Method Post -ContentType application/json -Body '{"problem_statement":"我在考虑考研还是工作"}'
+Invoke-RestMethod "http://localhost:3000/api/sessions/$($session.data.session_id)/messages" -Method Post -ContentType application/json -Body '{"message":"我希望尽快独立，但也不想过早放弃探索","client_turn_id":"turn-1"}'
 ```
