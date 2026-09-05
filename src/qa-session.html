@@ -10,14 +10,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="staging_src/journey.css">
+  <link rel="stylesheet" href="journey.css">
   <link rel="stylesheet" href="qa.css">
 </head>
 <body class="qa-page qa-session-page journey-page journey-qa-page" data-qa-page="session">
   <a class="skip-link" href="#main">跳至正文</a>
   <header class="site-header qa-header" id="site-header">
     <nav class="nav-shell" aria-label="主要导航">
-      <a class="brand" href="index.html#top" aria-label="见众首页"><img class="brand-mark qa-brand-mark" src="staging_src/logo-mark.svg" alt="" aria-hidden="true"><span>见众</span></a>
+      <a class="brand" href="index.html#top" aria-label="见众首页"><img class="brand-mark qa-brand-mark" src="assets/brand/logo-mark.svg" alt="" aria-hidden="true" width="100" height="120"><span>见众</span></a>
       <button class="menu-toggle" type="button" aria-label="打开导航菜单" aria-expanded="false" aria-controls="nav-links"><span></span><span></span></button>
       <div class="nav-links" id="nav-links">
         <a href="index.html#question">为什么</a><a href="index.html#framework">四个空间</a><a href="index.html#trajectories">相似人生</a><a href="index.html#rehearsal">人生预演</a><a href="qa.html">问答测试</a>
@@ -54,6 +54,7 @@
   <footer class="footer qa-footer"><div class="container footer-bottom"><span>© 2026 见众</span><a href="#main" data-scroll-top>回到顶部 ↑</a></div></footer>
   <script src="app-config.js"></script>
   <script>window.APP_CONFIG = { ...(window.APP_CONFIG || {}), apiBaseUrl: window.APP_CONFIG?.apiBaseUrl || "http://127.0.0.1:3000" };</script>
+  <script src="demo/curated-data.js"></script>
   <script src="qa.js"></script>
 </body>
 </html>
