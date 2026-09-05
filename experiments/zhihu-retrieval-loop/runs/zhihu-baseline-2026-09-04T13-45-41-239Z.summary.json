@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.1",
+  "run_id": "zhihu-baseline-2026-09-04T13-45-41-239Z",
+  "status": "rate_limited",
+  "stop_reason": "ZHIHU_RATE_LIMITED",
+  "output_path": "C:\\Users\\Youmo\\github\\hackhack\\experiments\\zhihu-retrieval-loop\\runs\\zhihu-baseline-2026-09-04T13-45-41-239Z.jsonl",
+  "resume_supported": true,
+  "planned_total_calls": 8,
+  "invocation_calls": 1,
+  "cumulative_calls": 9,
+  "completed_task_keys": 0,
+  "pending_calls": 8,
+  "transport_successes": 9,
+  "business_successes": 0,
+  "rate_limited_responses": 9,
+  "schema_valid_responses": 0,
+  "empty_successes": 0,
+  "latency_ms": {
+    "p50": 210,
+    "p95": 327,
+    "max": 327
+  }
+}

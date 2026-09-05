@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "results_path": "C:\\Users\\Youmo\\github\\hackhack\\experiments\\zhihu-retrieval-loop\\runs\\quota-paired-v1-2026-09-05T03-41-02-155Z.jsonl",
+  "automatic": {
+    "total_calls": 8,
+    "transport_success_rate": 1,
+    "business_success_rate": 1,
+    "business_success_wilson_95": {
+      "low": 0.6756,
+      "high": 1
+    },
+    "schema_valid_rate": 1,
+    "empty_success_rate": 0,
+    "latency_ms": {
+      "p50": 661,
+      "p95": 1483,
+      "max": 1483
+    },
+    "mean_items_per_success": 10,
+    "missing_required_field_rate": 0,
+    "mean_duplicate_url_ratio_within_case": 0,
+    "mean_repeat_jaccard": null
+  },
+  "manual": {
+    "completed_annotations": 40,
+    "strategies": {
+      "generated": {
+        "annotated_items": 20,
+        "usable_precision_at_5": 0.9,
+        "mean_relevance": 1.9,
+        "mean_lived_experience": 1.6,
+        "mean_evidence_sufficiency": 1.85,
+        "mean_distinct_paths_per_case": null,
+        "cases_with_at_least_two_paths_rate": null
+      },
+      "baseline": {
+        "annotated_items": 20,
+        "usable_precision_at_5": 0.55,
+        "mean_relevance": 1.7,
+        "mean_lived_experience": 0.9,
+        "mean_evidence_sufficiency": 1.45,
+        "mean_distinct_paths_per_case": null,
+        "cases_with_at_least_two_paths_rate": null
+      }
+    },
+    "inter_rater": {
+      "paired_items": 0,
+      "raw_agreement": null,
+      "cohens_kappa_usable": null
+    }
+  }
+}

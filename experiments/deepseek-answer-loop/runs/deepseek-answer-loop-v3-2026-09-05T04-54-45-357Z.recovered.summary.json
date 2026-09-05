@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "source_run_id": "deepseek-answer-loop-v3-2026-09-05T04-54-45-357Z",
+  "recovery_type": "deterministic_offline_normalization",
+  "cases": 4,
+  "source_successful_cases": 3,
+  "recovered_cases": 1,
+  "final_valid_cases": 4,
+  "model_calls_added": 0,
+  "notes": [
+    "Array-shaped fields are normalized without adding facts.",
+    "Forbidden success-rate wording is replaced with neutral uncertainty wording.",
+    "This is a post-processing result, not raw model compliance."
+  ]
+}
+

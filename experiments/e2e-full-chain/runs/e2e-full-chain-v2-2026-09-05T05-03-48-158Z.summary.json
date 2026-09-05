@@ -1,0 +1,25 @@
+{
+  "passed": false,
+  "passed_checks": 3,
+  "total_checks": 15,
+  "failed_checks": [
+    "first_turn_200",
+    "first_turn_asks",
+    "second_turn_200",
+    "second_turn_responds",
+    "final_state",
+    "provider_is_zhihu",
+    "not_degraded",
+    "sources_present",
+    "query_budget",
+    "answer_contract",
+    "idempotent_second_turn",
+    "message_count_stable"
+  ],
+  "action_sequence": [
+    "LLM_INVALID_RESPONSE",
+    "ANSWER_INVALID"
+  ],
+  "query_count": 0,
+  "source_count": 0
+}

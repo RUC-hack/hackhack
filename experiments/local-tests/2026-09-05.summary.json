@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "command": "npm test",
+  "date": "2026-09-05",
+  "tests": 45,
+  "passed": 45,
+  "failed": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "duration_ms": 573.957
+}
+

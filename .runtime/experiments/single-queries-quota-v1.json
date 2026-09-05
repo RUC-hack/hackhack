@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "prompt_version": "single-query-quota-v1",
+  "prompt_sha256": "d783c53bb31184f6fc9085d36b32209c8f094aa893ecb57ff2ce0d5d3272f614",
+  "input_sha256": "f01ce890b1c7307ada23ea859ba482979e3095ec9dd5228726d33244d7ff3460",
+  "generated_at": "2026-09-04T14:19:50.622Z",
+  "model": "deepseek-v4-flash",
+  "temperature": 0,
+  "cases": [
+    {
+      "case_id": "C01",
+      "decision_frame": "考研或直接就业",
+      "queries": [
+        {
+          "id": "generated",
+          "facet": "high_yield",
+          "query": "计算机大三考研还是就业 过来人经历"
+        }
+      ]
+    },
+    {
+      "case_id": "C03",
+      "decision_frame": "北京互联网公司或家乡银行",
+      "queries": [
+        {
+          "id": "generated",
+          "facet": "high_yield",
+          "query": "北京互联网offer和家乡银行怎么选 真实经历"
+        }
+      ]
+    },
+    {
+      "case_id": "C05",
+      "decision_frame": "本专业保研或跨专业申请",
+      "queries": [
+        {
+          "id": "generated",
+          "facet": "high_yield",
+          "query": "放弃保研跨专业申请 后悔吗 经历"
+        }
+      ]
+    },
+    {
+      "case_id": "C07",
+      "decision_frame": "考研二战或先工作",
+      "queries": [
+        {
+          "id": "generated",
+          "facet": "high_yield",
+          "query": "考研失败二战还是工作 后来怎么样了"
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 541,
+    "completion_tokens": 295,
+    "total_tokens": 836,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 541
+  }
+}

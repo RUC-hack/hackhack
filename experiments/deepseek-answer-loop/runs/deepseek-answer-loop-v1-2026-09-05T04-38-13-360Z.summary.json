@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "study_id": "deepseek-answer-loop-v1",
+  "run_id": "deepseek-answer-loop-v1-2026-09-05T04-38-13-360Z",
+  "output_path": "C:\\Users\\Youmo\\github\\hackhack\\experiments\\deepseek-answer-loop\\runs\\deepseek-answer-loop-v1-2026-09-05T04-38-13-360Z.jsonl",
+  "cases": 4,
+  "planned_model_calls": 8,
+  "successful_cases": 0,
+  "selector_schema_valid_rate": 0.25,
+  "answer_schema_valid_rate": 0,
+  "selector_against_single_rater": {
+    "evaluated": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "accuracy": null
+  },
+  "latency_ms": {
+    "selector_mean": 4381,
+    "writer_mean": 0
+  }
+}

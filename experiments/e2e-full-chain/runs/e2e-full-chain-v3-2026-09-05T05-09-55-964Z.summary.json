@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "passed_checks": 16,
+  "total_checks": 16,
+  "failed_checks": [],
+  "action_sequence": [
+    "ask",
+    "respond"
+  ],
+  "query_count": 2,
+  "source_count": 10
+}

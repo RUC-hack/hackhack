@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "analysis_type": "quota-aware",
+  "results_path": "C:\\Users\\Youmo\\github\\hackhack\\experiments\\zhihu-retrieval-loop\\runs\\zhihu-oracle-2026-09-04T13-36-23-657Z.jsonl",
+  "censoring": {
+    "rate_limit_observed": true,
+    "first_rate_limited_request_index": 5,
+    "reliability_rate_is_estimable": false,
+    "note": "Code 30001 rows are reported separately and excluded from content-quality denominators."
+  },
+  "calls": {
+    "executed": 32,
+    "successful": 10,
+    "rate_limited": 22,
+    "other_failures": 0
+  },
+  "successful_response_quality": {
+    "evaluated_calls": 10,
+    "schema_valid_calls": 10,
+    "schema_valid_rate": 1,
+    "empty_calls": 0,
+    "returned_items": 100,
+    "mean_items_per_success": 10
+  },
+  "manual": null
+}

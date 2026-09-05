@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "study_id": "deepseek-answer-loop-v1",
+  "case_ids": ["C01", "C03", "C05", "C07"],
+  "retrieval_condition": "generated",
+  "top_k": 5,
+  "stages": ["selector", "writer"],
+  "quality_gates": {
+    "selector_schema_valid_rate": 1,
+    "answer_schema_valid_rate": 1,
+    "citation_valid_rate": 1,
+    "minimum_selector_precision": 0.7,
+    "minimum_selector_recall": 0.7
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "study_id": "quota-paired-v1",
+  "run_id": "quota-paired-v1-2026-09-05T03-41-02-155Z",
+  "status": "complete",
+  "stop_reason": null,
+  "output_path": "C:\\Users\\Youmo\\github\\hackhack\\experiments\\zhihu-retrieval-loop\\runs\\quota-paired-v1-2026-09-05T03-41-02-155Z.jsonl",
+  "planned_calls": 8,
+  "invocation_calls": 8,
+  "cumulative_calls": 8,
+  "successful_tasks": 8,
+  "pending_calls": 0,
+  "rate_limited_responses": 0,
+  "other_failed_responses": 0,
+  "quality_denominator_calls": 8,
+  "latency_ms": {
+    "p50": 661,
+    "p95": 1483,
+    "max": 1483
+  }
+}

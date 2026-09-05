@@ -1,0 +1,14 @@
+{
+  "run_id": "zhihu-oracle-2026-09-04T13-36-23-657Z",
+  "output_path": "C:\\Users\\Youmo\\github\\hackhack\\experiments\\zhihu-retrieval-loop\\runs\\zhihu-oracle-2026-09-04T13-36-23-657Z.jsonl",
+  "total_calls": 32,
+  "transport_successes": 32,
+  "business_successes": 10,
+  "schema_valid_responses": 10,
+  "empty_successes": 0,
+  "latency_ms": {
+    "p50": 194,
+    "p95": 720,
+    "max": 761
+  }
+}

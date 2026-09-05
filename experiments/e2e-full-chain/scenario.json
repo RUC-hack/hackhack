@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "career-city-choice-v1",
+  "initial_message": "我在两条路之间犹豫，不知道该怎么选。",
+  "clarification": "一条是北京互联网公司的 offer，成长快、收入高但压力大；另一条是家乡银行，稳定、离家近但发展可能慢。我希望兼顾成长和家人，请基于现有信息直接给我不同人生路径的参照。",
+  "expected": {
+    "first_action": "ask",
+    "final_action": "respond",
+    "final_state": "WAITING_FOR_FOLLOW_UP",
+    "provider": "zhihu",
+    "maximum_queries": 2,
+    "minimum_sources": 1
+  }
+}

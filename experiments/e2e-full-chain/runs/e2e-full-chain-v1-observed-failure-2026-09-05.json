@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "capture_type": "retrospective_console_record",
+  "date": "2026-09-05",
+  "runner": "experiments/e2e-full-chain/run.mjs",
+  "command": "node .\\experiments\\e2e-full-chain\\run.mjs --live --model deepseek-chat",
+  "observed": {
+    "first_turn_http_status": 502,
+    "first_turn_expected_status": 200,
+    "failure_stage": "first_turn_assertion",
+    "saved_full_record": false
+  },
+  "limitation": "The v1 runner aborted on the assertion before it persisted the HTTP response body. This file records only the console-observed fact and must not be treated as a complete raw trace."
+}
+

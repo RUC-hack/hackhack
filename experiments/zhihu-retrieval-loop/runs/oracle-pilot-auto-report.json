@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "results_path": "C:\\Users\\Youmo\\github\\hackhack\\experiments\\zhihu-retrieval-loop\\runs\\zhihu-oracle-2026-09-04T13-36-23-657Z.jsonl",
+  "automatic": {
+    "total_calls": 32,
+    "transport_success_rate": 1,
+    "business_success_rate": 0.3125,
+    "business_success_wilson_95": {
+      "low": 0.1795,
+      "high": 0.4857
+    },
+    "schema_valid_rate": 0.3125,
+    "empty_success_rate": 0,
+    "latency_ms": {
+      "p50": 194,
+      "p95": 720,
+      "max": 761
+    },
+    "mean_items_per_success": 10,
+    "missing_required_field_rate": 0,
+    "mean_duplicate_url_ratio_within_case": 0,
+    "mean_repeat_jaccard": null
+  },
+  "manual": null
+}

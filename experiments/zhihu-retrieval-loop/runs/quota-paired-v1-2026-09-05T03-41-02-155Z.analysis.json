@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "analysis_type": "quota-aware",
+  "results_path": "C:\\Users\\Youmo\\github\\hackhack\\experiments\\zhihu-retrieval-loop\\runs\\quota-paired-v1-2026-09-05T03-41-02-155Z.jsonl",
+  "censoring": {
+    "rate_limit_observed": false,
+    "first_rate_limited_request_index": null,
+    "reliability_rate_is_estimable": true,
+    "note": null
+  },
+  "calls": {
+    "executed": 8,
+    "successful": 8,
+    "rate_limited": 0,
+    "other_failures": 0
+  },
+  "successful_response_quality": {
+    "evaluated_calls": 8,
+    "schema_valid_calls": 8,
+    "schema_valid_rate": 1,
+    "empty_calls": 0,
+    "returned_items": 80,
+    "mean_items_per_success": 10
+  },
+  "manual": null
+}
