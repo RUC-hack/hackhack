@@ -8,6 +8,7 @@ const ERROR_DEFAULTS = Object.freeze({
   METHOD_NOT_ALLOWED: { status: 405, retryable: false, message: "Method is not allowed" },
   LLM_NOT_CONFIGURED: { status: 503, retryable: true, message: "Language model is not configured" },
   LLM_INVALID_RESPONSE: { status: 502, retryable: false, message: "Language model returned an invalid response" },
+  LLM_CONTENT_FILTER: { status: 502, retryable: false, message: "Language model filtered the requested content" },
   LLM_OUTPUT_TRUNCATED: { status: 502, retryable: false, message: "Language model output was truncated" },
   LLM_TIMEOUT: { status: 504, retryable: true, message: "Language model request timed out" },
   LLM_NETWORK_ERROR: { status: 502, retryable: true, message: "Language model request failed" },
@@ -15,7 +16,9 @@ const ERROR_DEFAULTS = Object.freeze({
   RETRIEVAL_FAILED: { status: 503, retryable: true, message: "Experience retrieval failed" },
   LOCAL_DATASET_UNAVAILABLE: { status: 503, retryable: true, message: "Local experience dataset is unavailable" },
   EVIDENCE_INVALID: { status: 502, retryable: false, message: "Retrieved evidence is invalid" },
+  SOURCE_SELECTION_INVALID: { status: 502, retryable: false, message: "Selected source candidates are invalid" },
   ANSWER_INVALID: { status: 502, retryable: false, message: "Generated answer is invalid" },
+  ANALYSIS_IN_PROGRESS: { status: 409, retryable: true, message: "The current source analysis is still in progress" },
   SAFETY_HANDLING: { status: 200, retryable: false, message: "The request needs a safety response" },
   INTERNAL_ERROR: { status: 500, retryable: false, message: "Internal server error" },
 });

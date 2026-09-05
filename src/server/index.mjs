@@ -8,6 +8,7 @@ export { assertSourceDocument as assertStableSourceDocument, validateSourceDocum
 export { SESSION_STATES, STATE_TRANSITIONS, assertSession, assertTransition, canTransition, createSession, createUserMessage, publicSessionView } from "./contracts/session.mjs";
 export { EVIDENCE_STATUSES, assertEvidencePacket, validateEvidencePacket } from "./contracts/evidence.mjs";
 export { assertAgentDecision, assertAnswerEnvelope, validateAgentDecision, validateAnswerEnvelope } from "./contracts/answer.mjs";
+export { SOURCE_SELECTION_LIMITS, assertSourceSelection, selectedSourceIds, validateSourceSelection } from "./contracts/source-selection.mjs";
 
 export {
   ZhihuSearchClient,
@@ -31,6 +32,7 @@ export { SessionService } from "./services/session-service.mjs";
 export { AgentOrchestrator } from "./services/agent-orchestrator.mjs";
 export { EvidenceService } from "./services/evidence-service.mjs";
 export { AnswerBuilder } from "./services/answer-builder.mjs";
+export { SourceSelectionService } from "./services/source-selection-service.mjs";
 export { SafetyService } from "./services/safety-service.mjs";
 export { LlmGateway } from "./services/llm-gateway.mjs";
 export { MockLlmGateway } from "./services/mock-llm-gateway.mjs";

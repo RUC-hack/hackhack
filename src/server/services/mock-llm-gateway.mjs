@@ -1,15 +1,18 @@
-import { assertAgentDecision, assertAnswerEnvelope } from "../contracts/answer.mjs";
+import { ANSWER_OUTPUT_LIMITS, assertAgentDecision, assertAnswerEnvelope } from "../contracts/answer.mjs";
 import { appError } from "../contracts/errors.mjs";
+import { assertSourceSelection, SOURCE_SELECTION_LIMITS } from "../contracts/source-selection.mjs";
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
 export class MockLlmGateway {
-  constructor({ decisionSequence = [], answerFactory = null } = {}) {
+  constructor({ decisionSequence = [], selectionFactory = null, answerFactory = null } = {}) {
     this.decisionSequence = decisionSequence.map(clone);
+    this.selectionFactory = selectionFactory;
     this.answerFactory = answerFactory;
     this.decisionCalls = 0;
+    this.selectionCalls = 0;
     this.answerCalls = 0;
   }
 
@@ -24,14 +27,21 @@ export class MockLlmGateway {
     const latest = sessionView.raw_messages?.at(-1)?.text ?? "";
     const direct = /(直接回答|马上回答|立即回答|不用问|跳过|先回答)/u.test(latest);
     const questionCount = sessionView.question_count ?? 0;
-    const maxQuestions = sessionView.max_questions ?? 2;
-    if (!direct && questionCount < maxQuestions && sessionView.raw_messages?.length === 1 && latest.length < 40) {
+    const maxQuestions = sessionView.max_questions ?? 4;
+    const userTurnCount = (sessionView.raw_messages ?? []).filter((item) => item?.role === "user").length;
+    if (!direct && questionCount < maxQuestions && userTurnCount >= 1 && latest.length < 18) {
+      const questions = [
+        "在这个选择里，你现在最担心失去什么，或最想保留什么？",
+        "如果只看接下来两三年，你最希望这次选择带来什么变化？",
+        "哪些现实条件会让其中一条路暂时走不通？",
+        "你愿意为更想要的生活承担哪一种代价？",
+      ];
       return assertAgentDecision({
         action: "ask",
         reason: "先确认你最想比较的代价，才能让检索覆盖真正相关的经历。",
         blocking_unknowns: ["当前选择中最需要被比较的代价"],
         question: {
-          text: "在这个选择里，你现在最担心失去什么，或最想保留什么？",
+          text: questions[Math.min(questionCount, questions.length - 1)],
           suggestions: ["短期收入和稳定", "继续探索的机会", "还说不清"],
           allow_free_text: true,
           allow_skip: true,
@@ -52,6 +62,24 @@ export class MockLlmGateway {
     });
   }
 
+  async selectSources(input, { signal } = {}) {
+    if (signal?.aborted) throw appError("LLM_CANCELLED");
+    this.selectionCalls += 1;
+    if (this.selectionFactory) return assertSourceSelection(await this.selectionFactory(input));
+    const sourceIds = (input.evidence_packets ?? []).map((packet) => packet.source_id).filter(Boolean);
+    return assertSourceSelection({
+      groups: sourceIds.length ? [{
+        key: "case_mosaic",
+        title: "相似处境中的不同走向",
+        description: "先浏览与当前问题相关的公开经历，再进入综合分析。",
+        items: sourceIds.slice(0, SOURCE_SELECTION_LIMITS.maxItemsPerGroup).map((sourceId) => ({
+          source_id: sourceId,
+          reason: "材料与当前问题的处境或选择直接相关。",
+        })),
+      }] : [],
+    });
+  }
+
   async buildGroundedAnswer(input, { signal } = {}) {
     if (signal?.aborted) throw appError("LLM_CANCELLED");
     this.answerCalls += 1;
@@ -67,7 +95,7 @@ export class MockLlmGateway {
         kind: "case_mosaic",
         title: "材料中的几种人生质地",
         content: cases,
-        source_ids: sourceIds,
+        source_ids: sourceIds.slice(0, ANSWER_OUTPUT_LIMITS.maxSectionSources),
       }] : [],
       assumptions: input.session?.current_understanding?.assumptions ?? [],
       unknowns: [...(input.session?.current_understanding?.blocking_unknowns ?? []), ...packets.flatMap((packet) => packet.unknowns ?? [])],

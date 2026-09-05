@@ -34,7 +34,7 @@ export function createSession({
   id = `session_${randomUUID()}`,
   now = () => new Date(),
   problemStatement = "",
-  maxQuestions = 2,
+  maxQuestions = 4,
 } = {}) {
   const createdAt = now().toISOString();
   return {
@@ -57,6 +57,14 @@ export function createSession({
     retrievals: [],
     evidence_packets: [],
     answer_history: [],
+    source_selection: null,
+    analysis: {
+      analysis_id: null,
+      context_version: 1,
+      selection_id: null,
+      status: "idle",
+      error: null,
+    },
     current_answer: null,
     pending_question: null,
     pending_topic: null,

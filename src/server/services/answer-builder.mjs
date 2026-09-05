@@ -1,5 +1,5 @@
 import { appError } from "../contracts/errors.mjs";
-import { assertAnswerEnvelope, validateAnswerEnvelope } from "../contracts/answer.mjs";
+import { ANSWER_OUTPUT_LIMITS, assertAnswerEnvelope, validateAnswerEnvelope } from "../contracts/answer.mjs";
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -37,18 +37,20 @@ export class AnswerBuilder {
     const validation = validateAnswerEnvelope(answer, { sourceIds: packetSourceIds });
     if (!validation.valid) throw appError("ANSWER_INVALID", { details: { errors: validation.errors } });
     assertAnswerEnvelope(answer, { sourceIds: packetSourceIds });
-    const limitations = Array.isArray(answer.limitations) ? [...answer.limitations] : [];
-    if (!limitations.some((item) => /样本|预测|摘要/u.test(String(item)))) {
+    const modelLimitations = Array.isArray(answer.limitations) ? [...answer.limitations] : [];
+    const limitations = [];
+    if (!modelLimitations.some((item) => /样本|预测|摘要/u.test(String(item)))) {
       limitations.push("这些材料是公开经验样本，不代表总体，也不能预测你的结果；知乎摘要可能不完整。");
     }
-    if (retrievalMeta.degraded && !limitations.some((item) => /本地|降级/u.test(String(item)))) {
+    if (retrievalMeta.degraded && !modelLimitations.some((item) => /本地|降级/u.test(String(item)))) {
       limitations.push("本次检索使用了本地案例库作为降级来源。");
     }
+    limitations.push(...modelLimitations);
     return {
       ...clone(answer),
       assumptions: Array.isArray(answer.assumptions) ? answer.assumptions : [],
       unknowns: Array.isArray(answer.unknowns) ? answer.unknowns : [],
-      limitations,
+      limitations: limitations.slice(0, ANSWER_OUTPUT_LIMITS.maxLimitations),
       next_actions: Array.isArray(answer.next_actions) ? answer.next_actions : [],
     };
   }

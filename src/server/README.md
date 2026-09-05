@@ -118,7 +118,15 @@ npm run test:zhihu
 npm start
 ```
 
-接口顺序示例：
+## 统一回答流程
+
+当问询完成并开始检索后，后端会在同一个请求内完成来源筛选和证据约束回答，不再先向前端展示候选知乎条目。`POST /api/sessions/:id/messages` 直接返回 `action=respond`、`state=WAITING_FOR_FOLLOW_UP` 和最终 `answer`。
+
+来源筛选结果仍保存在 `source_selection` 中，用于约束最终回答的引用范围和支持前端回答后的来源回看；`analysis.status` 在统一回答返回时已经是 `completed`。前端先展示统一综合回答，再展示回答中实际引用的知乎来源。
+
+完整的状态、契约和失败处理约定见 [候选材料渐进分析设计](../../docs/候选材料渐进分析设计.md)；其中早期“先展示候选、后台回答”的部分已由当前统一回答流程取代。
+
+## 接口顺序示例：
 
 ```powershell
 $session = Invoke-RestMethod http://localhost:3000/api/sessions -Method Post -ContentType application/json -Body '{"problem_statement":"我在考虑考研还是工作"}'

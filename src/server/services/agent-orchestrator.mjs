@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { appError } from "../contracts/errors.mjs";
 import { assertAgentDecision } from "../contracts/answer.mjs";
 import { assertTransition, publicSessionView } from "../contracts/session.mjs";
+import { selectedSourceIds } from "../contracts/source-selection.mjs";
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -15,6 +16,17 @@ function isTopicSwitch(text) {
 function normalizeQueries(queries, fallback) {
   const values = [...new Set((queries ?? []).map((query) => String(query).trim()).filter(Boolean))];
   return (values.length ? values : [fallback]).slice(0, 4);
+}
+
+function contextQueries(session) {
+  const problem = String(session?.current_understanding?.problem_statement ?? "").trim();
+  const contextItems = Array.isArray(session?.current_understanding?.context_items)
+    ? session.current_understanding.context_items
+      .slice(-3)
+      .map((item) => String(item?.value ?? "").trim())
+      .filter(Boolean)
+    : [];
+  return normalizeQueries([problem, ...contextItems].filter(Boolean), problem || "人生选择 真实经历");
 }
 
 function sumKnown(metrics, field) {
@@ -54,6 +66,7 @@ export class AgentOrchestrator {
     retrievalService,
     evidenceService,
     answerBuilder,
+    sourceSelectionService,
     llmGateway,
     safetyService,
     sourceStore,
@@ -62,13 +75,14 @@ export class AgentOrchestrator {
     maxQueries = 4,
     idFactory = randomUUID,
   } = {}) {
-    for (const [name, dependency] of Object.entries({ sessionService, retrievalService, evidenceService, answerBuilder, llmGateway, safetyService, sourceStore })) {
+    for (const [name, dependency] of Object.entries({ sessionService, retrievalService, evidenceService, answerBuilder, sourceSelectionService, llmGateway, safetyService, sourceStore })) {
       if (!dependency) throw new TypeError(`AgentOrchestrator requires ${name}`);
     }
     this.sessionService = sessionService;
     this.retrievalService = retrievalService;
     this.evidenceService = evidenceService;
     this.answerBuilder = answerBuilder;
+    this.sourceSelectionService = sourceSelectionService;
     this.llmGateway = llmGateway;
     this.safetyService = safetyService;
     this.sourceStore = sourceStore;
@@ -121,10 +135,11 @@ export class AgentOrchestrator {
     let session = await this.sessionService.get(sessionId);
     const existingResult = await this.sessionService.getTurnResult(session, clientTurnId);
     if (existingResult) return existingResult;
+    if (session.analysis?.status === "running") throw appError("ANALYSIS_IN_PROGRESS");
 
     const startedAt = performance.now();
     const llmMetrics = [];
-    const safety = this.safetyService.check(text);
+    const safety = this.safetyService.check(text, { session });
     const appended = await this.sessionService.appendUserMessage(sessionId, {
       text,
       clientTurnId,
@@ -243,6 +258,27 @@ export class AgentOrchestrator {
       await this.#log({ event_type: "orchestrator_failed", request_id: requestId, session_id: sessionId, stage: "decision", error_code: error.code ?? "LLM_INVALID_RESPONSE", latency_ms: Math.max(0, Math.round(performance.now() - startedAt)), llm_metrics: summarizeLlmMetrics(llmMetrics) });
       throw error.code ? error : appError("LLM_INVALID_RESPONSE", { cause: error });
     }
+
+    const previousQuestion = String(session.pending_question?.text ?? "").trim();
+    const nextQuestion = String(decision.question?.text ?? "").trim();
+    if (decision.action === "ask" && previousQuestion && nextQuestion && previousQuestion === nextQuestion) {
+      decision = {
+        ...decision,
+        action: "retrieve",
+        question: null,
+        queries: contextQueries(session),
+        reason: "模型重复了上一轮追问，先基于你已经提供的信息寻找可回看的经历。",
+      };
+      await this.#log({
+        event_type: "repeated_question_guard",
+        request_id: requestId,
+        session_id: sessionId,
+        stage: "decision",
+        previous_question: previousQuestion,
+        action: "retrieve",
+        query_count: decision.queries.length,
+      });
+    }
     session.current_understanding.blocking_unknowns = clone(decision.blocking_unknowns ?? []);
     session.current_understanding.assumptions = clone(decision.assumptions ?? []);
     await this.#log({
@@ -309,33 +345,80 @@ export class AgentOrchestrator {
         reason: decision.reason,
         status: "validated",
         source_ids: sources.map((source) => source.source_id),
+        meta: clone(retrievalResult.meta),
         created_at: this.now().toISOString(),
       });
       this.#setStatus(session, "REVIEWING_EVIDENCE");
+      const allSources = await this.sourceStore.list();
+      const currentPackets = this.evidenceService.currentPackets(session).filter((packet) => packet.retrieval_id === retrievalId);
+      const sourceSelection = await this.sourceSelectionService.build({
+        session,
+        evidencePackets: currentPackets,
+        sources: allSources,
+        retrievalMeta: retrievalResult.meta,
+        retrievalId,
+        signal,
+        requestId,
+        metrics: llmMetrics,
+      });
+      const analysis = {
+        analysis_id: `analysis_${this.idFactory()}`,
+        context_version: session.context_version,
+        selection_id: sourceSelection.selection_id,
+        status: "running",
+        started_at: this.now().toISOString(),
+        error: null,
+      };
+      session.source_selection = sourceSelection;
+      session.analysis = analysis;
+      this.#setStatus(session, "PRESENTING");
+      session.pending_question = null;
+      await this.#log({
+        event_type: "source_selection_completed",
+        request_id: requestId,
+        session_id: sessionId,
+        stage: "selection",
+        selection_id: sourceSelection.selection_id,
+        retrieval_id: retrievalId,
+        selection_status: sourceSelection.status,
+        selected_source_ids: sourceSelection.source_ids,
+        group_count: sourceSelection.groups.length,
+        llm_metrics: summarizeLlmMetrics(llmMetrics),
+      });
+      const selectedIds = new Set(selectedSourceIds(sourceSelection));
+      const selectedPackets = currentPackets.filter((packet) => selectedIds.has(packet.source_id));
       const answer = await this.answerBuilder.build({
         session,
-        evidencePackets: this.evidenceService.currentPackets(session),
-        sources: await this.sourceStore.list(),
+        evidencePackets: selectedPackets,
+        sources: allSources,
         retrievalMeta: retrievalResult.meta,
         signal,
         requestId,
         metrics: llmMetrics,
       });
       for (const packet of session.evidence_packets) {
-        if (packet.status !== "stale" && packet.status !== "rejected") packet.status = "used";
+        if (selectedIds.has(packet.source_id) && packet.status !== "stale" && packet.status !== "rejected") packet.status = "used";
       }
-      const currentRetrieval = session.retrievals.find((retrieval) => retrieval.retrieval_id === retrievalId);
+      const currentRetrieval = session.retrievals.find((item) => item.retrieval_id === retrievalId);
       if (currentRetrieval) currentRetrieval.status = "used";
-      this.#setStatus(session, "WAITING_FOR_FOLLOW_UP");
       session.current_answer = answer;
-      session.pending_question = null;
       session.answer_history.push({ answer_id: `answer_${this.idFactory()}`, created_at: this.now().toISOString(), context_version: session.context_version, answer });
+      this.#setStatus(session, "WAITING_FOR_FOLLOW_UP");
+      session.analysis = {
+        ...analysis,
+        status: "completed",
+        completed_at: this.now().toISOString(),
+        error: null,
+        llm_metrics: summarizeLlmMetrics(llmMetrics),
+      };
       result = {
         action: "respond",
         session_id: sessionId,
         message_id: message.message_id,
         reason: decision.reason,
         retrieval: { queries, source_ids: sources.map((source) => source.source_id), meta: retrievalResult.meta },
+        source_selection: sourceSelection,
+        analysis: session.analysis,
         answer,
         state: session.status,
       };
@@ -356,6 +439,15 @@ export class AgentOrchestrator {
         result = { action: "respond", session_id: sessionId, message_id: message.message_id, reason: decision.reason, answer, state: session.status };
       }
     } catch (error) {
+      if (session.analysis?.status === "running") {
+        session.analysis = {
+          ...session.analysis,
+          status: "failed",
+          completed_at: this.now().toISOString(),
+          error: { code: error.code ?? "ANSWER_INVALID", retryable: Boolean(error.retryable) },
+          llm_metrics: summarizeLlmMetrics(llmMetrics),
+        };
+      }
       this.#setStatus(session, "FAILED_RECOVERABLE");
       await this.sessionService.save(session);
       await this.#log({

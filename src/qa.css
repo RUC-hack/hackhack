@@ -7,6 +7,161 @@
 @media(max-width:600px){.qa-results-hero{padding:105px 0 86px}.qa-results-hero h2{font-size:38px}.qa-results-hero .journey-results-intro{margin-top:32px}.qa-results-paths,.qa-results-people{padding:85px 0}.qa-results .journey-path{grid-template-columns:50px 1fr;padding:28px 0}.qa-results .journey-path:hover,.qa-results .journey-path[aria-current="true"]{padding-left:12px;padding-right:12px}.qa-results .journey-path-people{grid-column:2;justify-content:flex-start;padding:22px 0 0 8px}.qa-results .journey-path-copy{padding:0}.qa-results .journey-people-layout{gap:32px}.qa-results .journey-person-detail{padding:28px 20px}.qa-detail-person{width:84px;height:100px}}
 @media(prefers-reduced-motion:reduce){.qa-results.is-visible .qa-results-hero,.qa-results.is-visible .qa-results-paths,.qa-results.is-visible .qa-results-people{animation:none}}
 
+/* 页面之间用同一张纸面完成淡入淡出，避免把三段流程堆成一张长页面。 */
+.qa-page{animation:qa-page-enter .55s cubic-bezier(.22,1,.36,1) both}
+.qa-page.is-leaving{animation:qa-page-leave .3s ease both;pointer-events:none}
+@keyframes qa-page-enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes qa-page-leave{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-12px)}}
+
+/* 完整 AI 回答独立为结果页的第二层，引用留在各节下方，不再挤占对话舞台。 */
+.qa-answer-section{padding:clamp(94px,10vw,148px) 0;background:#fbfaf7;color:var(--ink)}
+.qa-answer-section .journey-section-title{margin-bottom:44px}
+.qa-answer-view{width:min(880px,100%);margin:0 auto;padding:clamp(28px,4vw,54px) clamp(18px,4vw,60px);border-top:1px solid var(--ink);border-bottom:1px solid var(--line);background:rgba(255,255,255,.42)}
+.qa-answer-summary{margin:0 0 34px;font:500 clamp(24px,3vw,36px)/1.65 var(--serif);letter-spacing:-.035em;color:var(--primary);overflow-wrap:anywhere}
+.qa-answer-sections{display:grid;gap:26px}
+.qa-answer-view .qa-answer-block{margin:0;padding:22px 0 0;border-top:1px solid var(--line)}
+.qa-answer-view .qa-answer-block h3{font:500 22px/1.5 var(--serif);margin:0 0 10px;color:var(--primary)}
+.qa-answer-view .qa-answer-block p{margin:0;font-size:14px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}
+.qa-answer-view .qa-sources{margin-top:14px}
+.qa-answer-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:34px}
+.qa-answer-note{padding:16px 18px;background:#f3f0e9;color:var(--muted)}
+.qa-answer-note strong{display:block;margin-bottom:8px;color:var(--primary);font-size:12px;font-weight:500;letter-spacing:.08em}
+.qa-answer-note p{margin:0;font-size:12px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:600px){
+  .qa-answer-section{padding:80px 0}
+  .qa-answer-section .container{width:calc(100% - 36px)}
+  .qa-answer-view{padding:24px 18px}
+  .qa-answer-summary{font-size:24px}
+  .qa-answer-notes{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.qa-page,.qa-page.is-leaving{animation:none}}
+
+/* Live session：标题和输入栏固定在舞台两端，消息历史在中间的小窗内回看。 */
+.qa-page .qa-conversation.live-session-active:not(.is-searching){
+  width:min(1080px,calc(100% - 96px));
+  height:calc(100svh - 78px);
+  min-height:calc(100svh - 78px);
+  max-height:calc(100svh - 78px);
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  padding:clamp(42px,7vh,78px) 0 18px;
+}
+.qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-conversation-heading{flex:0 0 auto;margin-bottom:14px}
+.qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-status{flex:0 0 auto;min-height:20px;margin-bottom:8px}
+.qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-messages{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  padding:0 22px 22px;
+  scrollbar-color:rgba(168,102,66,.58) transparent;
+  scrollbar-width:thin;
+}
+.qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-error{flex:0 0 auto;margin:8px 0 0}
+.qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-message-form{
+  flex:0 0 auto;
+  margin-top:14px;
+  position:relative;
+  bottom:auto;
+  padding-top:14px;
+}
+.qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-conversation-heading,
+.qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-messages,
+.qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-message-form{
+  width:min(880px,100%);
+  box-sizing:border-box;
+}
+.qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-message-form textarea{min-height:62px}
+@media(max-width:900px){
+  .qa-page .qa-conversation.live-session-active:not(.is-searching){width:min(720px,calc(100% - 48px))}
+}
+@media(max-width:600px){
+  .qa-page .qa-conversation.live-session-active:not(.is-searching){
+    width:calc(100% - 36px);
+    height:calc(100svh - 72px);
+    min-height:calc(100svh - 72px);
+    max-height:calc(100svh - 72px);
+    padding:42px 0 10px;
+  }
+  .qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-conversation-heading{margin-bottom:10px;padding-bottom:18px}
+  .qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-messages{padding:0 12px 12px}
+  .qa-page .qa-conversation.live-session-active:not(.is-searching) .qa-message-form{margin-top:10px;padding-top:10px}
+}
+
+/* 恢复 staging_src/question.html 的全屏提问构图；对话仍保留为同一页中的可回看流程。 */
+.qa-page{background:#fbfaf7;color:var(--ink)}
+.qa-main{padding:0;background:#fbfaf7}
+.qa-question-screen{min-height:100svh;padding:calc(78px + clamp(34px,7vh,84px)) clamp(24px,7vw,110px) clamp(48px,7vh,76px);display:grid;align-items:center;background:#fbfaf7}
+.qa-question-layout{width:min(1260px,100%);margin:auto;display:grid;grid-template-columns:.78fr 1.22fr;gap:clamp(54px,9vw,150px);align-items:end}
+.qa-intro-copy{width:auto;margin:0;display:block}
+.qa-intro-copy .eyebrow{margin:0 0 28px}
+.qa-intro h1{margin:0 0 24px;font:600 clamp(48px,5.8vw,86px)/1.2 var(--serif);letter-spacing:-.05em;overflow-wrap:anywhere}
+.qa-intro h1 em{font-style:normal;color:var(--accent)}
+.qa-intro-copy>p:last-child{max-width:390px;margin:0;color:var(--muted);font-size:13px;line-height:1.8}
+.qa-writing-panel{min-width:0;align-self:end;transition:opacity .35s ease,transform .35s ease,visibility .35s ease}
+.qa-writing-panel.is-exiting{opacity:0;transform:translateY(-18px);visibility:hidden;pointer-events:none}
+.qa-writing-panel.session-started{display:none}
+.qa-start-card{padding:0;border:0}
+.qa-label{display:block;margin:0 0 14px;color:var(--muted);font-size:12px}
+.qa-start-card textarea{display:block;width:100%;min-height:360px;padding:30px 4px;border:0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);border-radius:0;background:transparent;color:var(--ink);font:400 clamp(20px,2vw,29px)/1.9 var(--serif);resize:vertical;outline:0;transition:border-color .3s}
+.qa-start-card textarea:focus{border-top-color:var(--accent);border-bottom-color:var(--accent)}
+.qa-form-footer{display:grid;grid-template-columns:1fr auto;gap:8px 24px;align-items:center;margin:22px 0 0;color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+.qa-form-footer .button{grid-column:2;grid-row:1/3;min-width:150px}
+.qa-start-error{grid-column:1;min-height:1.5em;margin:0;font-size:11px}
+
+/* 对话沿用 staging_src/matching.html 的细线、留白和阶段感，减少“气泡堆叠”的拥挤。 */
+.qa-conversation{width:min(1080px,calc(100% - 96px));margin:0 auto;padding:clamp(84px,12vh,140px) 0 120px;scroll-margin-top:78px;background:#fbfaf7}
+.qa-conversation.live-session-active{min-height:calc(100svh - 78px)}
+.qa-conversation-heading{max-width:880px;margin:0 auto 20px;padding-bottom:26px;border-bottom:1px solid var(--line);align-items:end}
+.qa-conversation-heading h2{font:600 clamp(30px,4vw,52px)/1.25 var(--serif);letter-spacing:-.04em}
+.qa-messages{max-width:880px;margin:0 auto;gap:0}
+.qa-message{width:min(78%,720px);max-width:none;padding:28px 0;border-top:1px solid var(--line);background:transparent;box-shadow:none;color:var(--ink)}
+.qa-message.user{align-self:flex-end;border-top-color:var(--accent);background:transparent;color:var(--ink);text-align:right}
+.qa-message.assistant{align-self:flex-start;border-left:0}
+.qa-message-label{margin-bottom:9px;color:var(--accent);font-size:10px;letter-spacing:.16em}
+.qa-message.user .qa-message-label{color:var(--accent)}
+.qa-message p{font:400 16px/1.9 var(--sans);white-space:pre-wrap}
+.qa-message-actions{justify-content:flex-start;gap:14px;margin-top:18px}
+.qa-suggestion{padding:8px 0;border:0;border-bottom:1px solid var(--line);background:transparent;font-size:12px}
+.qa-suggestion:hover{border-color:var(--accent);color:var(--accent)}
+.qa-message-form{max-width:880px;margin:46px auto 0;padding:18px 0 0;border-top:1px solid var(--ink);position:sticky;bottom:0;z-index:8;background:rgba(251,250,247,.94);backdrop-filter:blur(14px)}
+.qa-message-form textarea{min-height:70px;padding:12px 4px;border:0;border-bottom:1px solid var(--line);background:transparent;font:400 15px/1.75 var(--sans)}
+.qa-message-form .button{min-height:52px}
+
+/* 搜索阶段单独占据一屏，沿用 matching.html 的“寻找仪式”。 */
+.qa-conversation.is-searching{width:100%;max-width:none;margin:0;padding:0;background:#fff}
+.qa-conversation.is-searching .qa-search-ritual{min-height:calc(100svh - 78px);margin:0;padding:clamp(112px,16vh,178px) clamp(24px,7vw,110px) 56px;border:0;background:#fff}
+.qa-conversation.is-searching .qa-search-copy{width:min(1260px,100%);max-width:none;margin:0 auto}
+
+@media(max-width:900px){
+  .qa-question-screen{padding-top:112px;align-items:start}
+  .qa-question-layout{grid-template-columns:1fr;gap:48px}
+  .qa-intro h1{font-size:clamp(48px,9vw,74px)}
+  .qa-start-card textarea{min-height:300px}
+  .qa-conversation{width:min(720px,calc(100% - 48px))}
+  .qa-message{width:86%}
+}
+@media(max-width:600px){
+  .qa-question-screen{padding:104px 18px 42px;align-items:start}
+  .qa-question-layout{gap:32px}
+  .qa-intro-copy .eyebrow{margin-bottom:20px}
+  .qa-intro h1{font-size:43px}
+  .qa-intro-copy>p:last-child{font-size:13px}
+  .qa-start-card textarea{min-height:290px;padding:20px 2px;font-size:19px}
+  .qa-form-footer{grid-template-columns:1fr;gap:12px}
+  .qa-form-footer .button{grid-column:1;grid-row:auto;width:100%;margin-top:4px}
+  .qa-conversation{width:calc(100% - 36px);padding:76px 0 90px}
+  .qa-conversation-heading{align-items:flex-start;flex-direction:column;gap:16px}
+  .qa-message{width:100%;padding:22px 0}
+  .qa-message p{font-size:15px}
+  .qa-message-form{margin-top:32px}
+  .qa-conversation.is-searching .qa-search-ritual{min-height:calc(100svh - 72px);padding:104px 18px 205px}
+  .qa-conversation.is-searching .qa-search-copy{width:100%}
+}
+
 /* 加载仪式沿用 staging_src 的人群流动动画，人物本体换成本地 SVG。 */
 .qa-crowd-stream .qa-people-track{left:-12%;width:124%;height:112px;gap:clamp(50px,7vw,120px)}
 .qa-crowd-stream .qa-people-track:nth-child(1){top:5%;animation:journey-drift-left 22s linear infinite;opacity:.24}
@@ -24,3 +179,64 @@
 @media(max-width:1050px){.qa-search-ritual{min-height:620px}.qa-search-copy{max-width:68%}.qa-crowd-stream{right:-8%;width:38%;opacity:.34}.qa-analysis{grid-template-columns:1fr}.qa-analysis-stage{min-height:82px;padding:13px 0}.qa-analysis-stage p{max-width:430px}.qa-search-ritual h2{font-size:clamp(38px,5vw,54px)}}
 @media(max-width:720px){.qa-conversation.is-searching{width:calc(100% - 28px)}.qa-search-ritual{min-height:690px;padding:42px 8px 205px}.qa-search-copy{max-width:none;min-height:440px}.qa-search-ritual h2{font-size:clamp(34px,10vw,46px);margin-bottom:32px}.qa-analysis{gap:0}.qa-analysis-stage{min-height:78px}.qa-crowd-stream{left:0;right:0;top:auto;bottom:-10px;width:100%;height:180px;opacity:.25;mask-image:linear-gradient(to bottom,transparent 0,#000 28%,#000 86%,transparent 100%)}.qa-crowd-stream .qa-people-track:nth-child(1){top:2%}.qa-crowd-stream .qa-people-track:nth-child(2){top:48%}.qa-crowd-stream .qa-people-track:nth-child(3){display:none}.qa-search-result{margin-top:24px}}
 .qa-search-ritual:before{background:radial-gradient(circle at 83% 28%,rgba(168,102,66,.07),transparent 21%),radial-gradient(circle at 76% 56%,rgba(32,37,34,.035),transparent 28%),linear-gradient(180deg,#fbfaf7 0%,#f6f5f1 100%)}.qa-search-result.is-found{color:var(--accent)}
+
+/* QA 结果页继续使用 staging_src/paths.html 的收尾节奏，同时保持本地素材优先。 */
+.qa-brand-mark{width:24px;height:29px;object-fit:contain;flex:0 0 auto}
+.qa-page .journey-question-form{align-items:start}
+.qa-page .journey-writing-area{min-width:0}
+.qa-results .qa-crowd-question{min-height:62svh;background-color:var(--primary);background-image:url("assets/images/closing.jpg");background-size:cover;background-position:center}
+.qa-results .qa-crowd-question:before{background:linear-gradient(90deg,rgba(10,26,21,.88),rgba(10,26,21,.52)),linear-gradient(0deg,rgba(10,26,21,.56),rgba(10,26,21,.18))}
+.qa-results .qa-crowd-question h2{max-width:820px}
+.qa-results .qa-crowd-question>.container>p:not(.eyebrow){max-width:560px}
+.qa-results .journey-person-composer{margin-top:28px;padding-top:28px;border-top:1px solid var(--line)}
+.qa-results .journey-person-composer h4{font:600 20px var(--serif);margin:0 0 16px}
+.qa-results .journey-person-composer textarea{display:block;width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:0;background:#fafbfa;color:var(--ink);padding:16px;font:400 15px/1.7 var(--sans);outline:0}
+.qa-results .journey-person-composer textarea:focus{border-color:var(--accent)}
+.qa-results .journey-person-composer .button{margin-top:14px}
+@media(max-width:600px){.qa-brand-mark{width:22px;height:27px}.qa-results .qa-crowd-question{min-height:66svh}.qa-results .qa-crowd-question{background-position:62% center}}
+
+/* 最终层：覆盖旧版 QA 卡片规则，保证 staging 风格在所有断点下优先生效。 */
+.qa-page .qa-question-layout{align-items:end}
+.qa-page .qa-writing-panel{min-width:0;align-self:end}
+.qa-page .qa-start-card{padding:0;border:0}
+.qa-page .qa-start-card textarea{min-height:360px;padding:30px 4px;border:0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);background:transparent;font:400 clamp(20px,2vw,29px)/1.9 var(--serif)}
+.qa-page .qa-form-footer{display:grid;grid-template-columns:1fr auto;gap:8px 24px;align-items:center;margin:22px 0 0}
+.qa-page .qa-form-footer .button{grid-column:2;grid-row:1/3;min-width:150px}
+.qa-page .qa-start-error{grid-column:1;min-height:1.5em;margin:0}
+.qa-page .qa-conversation{width:min(1080px,calc(100% - 96px));margin:0 auto;padding:clamp(84px,12vh,140px) 0 120px;background:#fbfaf7}
+.qa-page .qa-conversation.live-session-active{min-height:calc(100svh - 78px)}
+.qa-page .qa-conversation-heading{max-width:880px;margin:0 auto 20px;padding-bottom:26px;border-bottom:1px solid var(--line)}
+.qa-page .qa-messages{max-width:880px;margin:0 auto;gap:0}
+.qa-page .qa-message{width:min(78%,720px);max-width:none;padding:28px 0;border-top:1px solid var(--line);background:transparent;box-shadow:none;color:var(--ink)}
+.qa-page .qa-message.user{align-self:flex-end;border-top-color:var(--accent);background:transparent;color:var(--ink);text-align:right}
+.qa-page .qa-message.assistant{align-self:flex-start;border-left:0}
+.qa-page .qa-message.user .qa-message-label{color:var(--accent)}
+.qa-page .qa-message p{font:400 16px/1.9 var(--sans)}
+.qa-page .qa-suggestion{padding:8px 0;border:0;border-bottom:1px solid var(--line);background:transparent}
+.qa-page .qa-message-form{max-width:880px;margin:46px auto 0;padding:18px 0 0;border-top:1px solid var(--ink);position:sticky;bottom:0;z-index:8;background:rgba(251,250,247,.94);backdrop-filter:blur(14px)}
+.qa-page .qa-message-form textarea{min-height:70px;padding:12px 4px;border:0;border-bottom:1px solid var(--line);background:transparent;font:400 15px/1.75 var(--sans)}
+.qa-page .qa-conversation.is-searching{width:100%;max-width:none;margin:0;padding:0;background:#fff}
+.qa-page .qa-conversation.is-searching .qa-search-ritual{min-height:calc(100svh - 78px);margin:0;padding:clamp(112px,16vh,178px) clamp(24px,7vw,110px) 56px;border:0;background:#fff}
+.qa-page .qa-conversation.is-searching .qa-search-copy{width:min(1260px,100%);max-width:none;margin:0 auto}
+
+@media(max-width:900px){
+  .qa-page .qa-question-screen{padding-top:112px;align-items:start}
+  .qa-page .qa-question-layout{grid-template-columns:1fr;gap:48px}
+  .qa-page .qa-start-card textarea{min-height:300px}
+  .qa-page .qa-conversation{width:min(720px,calc(100% - 48px))}
+  .qa-page .qa-message{width:86%}
+}
+@media(max-width:600px){
+  .qa-page .qa-question-screen{padding:104px 18px 42px;align-items:start}
+  .qa-page .qa-question-layout{gap:32px}
+  .qa-page .qa-start-card textarea{min-height:290px;padding:20px 2px;font-size:19px}
+  .qa-page .qa-form-footer{grid-template-columns:1fr;gap:12px}
+  .qa-page .qa-form-footer .button{grid-column:1;grid-row:auto;width:100%;margin-top:4px}
+  .qa-page .qa-conversation{width:calc(100% - 36px);padding:76px 0 90px}
+  .qa-page .qa-conversation-heading{align-items:flex-start;flex-direction:column;gap:16px}
+  .qa-page .qa-message{width:100%;padding:22px 0}
+  .qa-page .qa-message p{font-size:15px}
+  .qa-page .qa-message-form{margin-top:32px}
+  .qa-page .qa-conversation.is-searching .qa-search-ritual{min-height:calc(100svh - 72px);padding:104px 18px 205px}
+  .qa-page .qa-conversation.is-searching .qa-search-copy{width:100%}
+}

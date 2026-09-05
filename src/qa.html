@@ -8,17 +8,17 @@
   <meta name="description" content="见众问答：从可回看的公开经验中，看见自己的坐标。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="staging_src/journey.css">
   <link rel="stylesheet" href="qa.css">
 </head>
-<body class="qa-page qa-live-page">
+<body class="qa-page qa-start-page journey-page journey-qa-page" data-qa-page="start">
   <a class="skip-link" href="#main">跳至正文</a>
   <header class="site-header qa-header" id="site-header">
     <nav class="nav-shell" aria-label="主要导航">
       <a class="brand" href="index.html#top" aria-label="见众首页">
-        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <img class="brand-mark qa-brand-mark" src="staging_src/logo-mark.svg" alt="" aria-hidden="true">
         <span>见众</span>
       </a>
       <button class="menu-toggle" type="button" aria-label="打开导航菜单" aria-expanded="false" aria-controls="nav-links">
@@ -35,94 +35,28 @@
   </header>
 
   <main id="main" class="qa-main">
-    <section class="qa-intro container" aria-labelledby="qa-title">
-      <div class="qa-intro-copy">
-        <p class="eyebrow">BEGIN WITH A QUESTION</p>
-        <h1 id="qa-title">有什么让你纠结了<br><em>很久的事？</em></h1>
-        <p>越具体越好。不需要一次说完整，我们会在对话里慢慢把它说清楚。</p>
+    <section class="qa-question-screen journey-question" aria-labelledby="qa-title">
+      <div class="qa-question-layout journey-question-form">
+        <div class="qa-intro-copy journey-question-heading">
+          <p class="eyebrow">BEGIN WITH A QUESTION</p>
+          <h1 id="qa-title">有什么让你纠结了<br><em>很久的事？</em></h1>
+          <p>越具体越好。不需要一次说完整，我们会在对话里慢慢把它说清楚。</p>
+        </div>
+
+        <div class="qa-writing-panel" id="qa-workspace" aria-label="问答工作区">
+          <form class="qa-start-card journey-writing-area" id="start-form" novalidate>
+            <label class="qa-label" for="problem-input">写下让你纠结很久的事</label>
+            <textarea id="problem-input" name="problem" rows="7" maxlength="8000" required>我大四要毕业了。是继续读博，去互联网公司工作，还是回家乡？我担心读博以后年龄越来越大，也担心现在不去工作会错过好的就业机会。</textarea>
+            <div class="qa-form-footer journey-form-meta">
+              <span>至少 8 个字符 · 支持在对话中继续补充</span>
+              <button class="button button-dark" type="submit"><span>开始回答</span><span aria-hidden="true">→</span></button>
+              <p class="qa-start-error journey-error" id="qa-start-error" role="alert" aria-live="polite"></p>
+            </div>
+          </form>
+        </div>
       </div>
     </section>
 
-    <section class="qa-workspace container" id="qa-workspace" aria-label="问答工作区">
-      <form class="qa-card qa-start-card" id="start-form">
-        <div class="qa-card-heading">
-          <span class="qa-step">01 / 03</span>
-          <div><p class="eyebrow">WRITE IT DOWN</p><h2>把它交给一段对话</h2></div>
-        </div>
-        <label class="qa-label" for="problem-input">用自己的话描述，不需要一次说完整</label>
-        <textarea id="problem-input" name="problem" rows="6" maxlength="8000" required>我大四要毕业了。是继续读博，去互联网公司工作，还是回家乡？我担心读博以后年龄越来越大，也担心现在不去工作会错过好的就业机会。</textarea>
-        <div class="qa-form-footer">
-          <span>至少 8 个字符 · 支持在对话中继续补充</span>
-          <button class="button button-dark" type="submit"><span>开始寻找</span><span aria-hidden="true">↗</span></button>
-        </div>
-      </form>
-
-      <aside class="qa-card qa-guide">
-        <p class="eyebrow">HOW IT WORKS</p>
-        <h2>先听清问题，<br>再看见路径。</h2>
-        <div class="qa-guide-list">
-          <div><span>01</span><p>说出一个正在经历的选择或困惑。</p></div>
-          <div><span>02</span><p>回答一两个追问，让问题更接近真实的你。</p></div>
-          <div><span>03</span><p>从公开经验样本里，回看不同生活的质感与代价。</p></div>
-        </div>
-      </aside>
-    </section>
-
-    <section class="qa-conversation container" id="conversation" hidden aria-labelledby="conversation-title">
-      <div class="qa-search-ritual" id="qa-search-ritual" hidden aria-hidden="true">
-        <div class="qa-search-copy">
-          <p class="eyebrow" id="qa-search-eyebrow">SEARCHING THE HUMAN ARCHIVE</p>
-          <h2 id="qa-search-title">正在寻找可能与你有<br>相似经历的知友……</h2>
-          <ol class="qa-analysis" id="qa-analysis-stages" aria-label="当前处理阶段"></ol>
-          <p class="qa-search-result" id="qa-search-result">正在让你的问题进入一片更大的人生样本。</p>
-        </div>
-        <div class="qa-crowd-stream" id="qa-crowd-stream" aria-hidden="true"></div>
-      </div>
-      <div class="qa-conversation-heading">
-          <div><p class="eyebrow">CURRENT QUESTION</p><h2 id="conversation-title">一段正在展开的对话</h2></div>
-        <button class="text-button" id="reset-button" type="button">重新开始 ↗</button>
-      </div>
-      <div class="qa-status" id="qa-status" role="status" aria-live="polite"></div>
-      <div class="qa-messages" id="qa-messages" aria-live="polite"></div>
-      <div class="qa-error" id="qa-error" role="alert" hidden></div>
-      <form class="qa-message-form" id="message-form">
-        <label class="sr-only" for="message-input">继续输入</label>
-        <textarea id="message-input" rows="3" maxlength="8000" placeholder="补充你的情况，或回答我们的问题。" required></textarea>
-        <button class="button button-dark" type="submit"><span>发送</span><span aria-hidden="true">↑</span></button>
-      </form>
-    </section>
-
-    <section class="qa-results" id="qa-results" hidden aria-labelledby="qa-results-title">
-      <section class="journey-results-hero qa-results-hero">
-        <div class="container">
-          <p class="eyebrow">SIMILAR LIVES · MATCHED PATHS</p>
-          <h2 id="qa-results-title">关于「<span id="qa-result-question"></span>」，<br>TA 们是这样做的……</h2>
-          <p class="journey-results-intro">这里没有一条被计算出的正确道路。先看看不同的人怎样选择、承担，又怎样在后来重新理解当时的自己。</p>
-        </div>
-      </section>
-
-      <section class="journey-paths-section qa-results-paths" id="qa-paths-list" aria-labelledby="qa-paths-title">
-        <div class="container">
-          <div class="journey-section-title"><p class="eyebrow">01 · MATCHED DIRECTIONS</p><h2 id="qa-paths-title">有哪几条路？</h2></div>
-          <div class="journey-path-list" id="qa-path-list"></div>
-        </div>
-      </section>
-
-      <section class="journey-people-section qa-results-people" id="qa-people-pool" aria-labelledby="qa-people-title">
-        <div class="container">
-          <header class="journey-people-heading">
-            <p class="eyebrow">02 · PEOPLE IN THIS ANSWER</p>
-            <h2 id="qa-people-title">这条路上的人</h2>
-            <p id="qa-people-description"></p>
-          </header>
-          <div class="journey-people-layout">
-            <div class="journey-person-list" id="qa-person-list" role="listbox" aria-label="选择一位知乎来源样本"></div>
-            <article class="journey-person-detail" id="qa-person-detail" aria-live="polite"></article>
-          </div>
-          <p class="content-note">人物卡片引用可回看的知乎公开页面。摘要只保留页面能够支持的内容，不补写答主身份与人生结局；这些经历是参照，不是预测或标准答案。</p>
-        </div>
-      </section>
-    </section>
   </main>
 
   <footer class="footer qa-footer">

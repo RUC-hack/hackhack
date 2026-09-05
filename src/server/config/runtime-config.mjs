@@ -28,7 +28,7 @@ export function loadRuntimeConfig(env = process.env) {
     runtime_cache_dir: runtimeCacheDir,
     max_request_bytes: envInteger(env.MAX_REQUEST_BYTES, 64 * 1024, { minimum: 1_024, maximum: 1_048_576, name: "MAX_REQUEST_BYTES" }),
     request_timeout_ms: envInteger(env.REQUEST_TIMEOUT_MS, 180_000, { minimum: 1_000, maximum: 300_000, name: "REQUEST_TIMEOUT_MS" }),
-    max_questions: envInteger(env.MAX_QUESTIONS, 2, { minimum: 0, maximum: 10, name: "MAX_QUESTIONS" }),
+    max_questions: envInteger(env.MAX_QUESTIONS, 4, { minimum: 0, maximum: 10, name: "MAX_QUESTIONS" }),
     retrieval_query_budget: envInteger(env.RETRIEVAL_QUERY_BUDGET, 4, { minimum: 1, maximum: 8, name: "RETRIEVAL_QUERY_BUDGET" }),
     local_dataset_path: path.resolve(stringValue(env.LOCAL_DATASET_PATH, "data/experiences.jsonl")),
     deepseek_api_key: stringValue(env.DEEPSEEK_API_KEY, ""),

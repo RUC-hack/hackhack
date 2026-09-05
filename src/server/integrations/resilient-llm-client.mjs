@@ -17,6 +17,19 @@ function usageStats(usage) {
   };
 }
 
+function normalizeMessageContent(content) {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content.map((part) => {
+      if (typeof part === "string") return part;
+      if (part && typeof part.text === "string") return part.text;
+      return "";
+    }).join("");
+  }
+  if (content && typeof content.text === "string") return content.text;
+  return null;
+}
+
 export function extractJsonObject(content) {
   if (typeof content !== "string") throw appError("LLM_INVALID_RESPONSE");
   const start = content.indexOf("{");
@@ -46,7 +59,7 @@ export function extractJsonObject(content) {
 }
 
 export class ResilientLlmClient {
-  constructor({ apiKey, baseUrl = "https://api.deepseek.com", model = "deepseek-chat", timeoutMs = 90_000, maxRetries = 1, temperature = 0, maxTokens = 3_000, fetchImpl = globalThis.fetch, sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)), logger = null } = {}) {
+  constructor({ apiKey, baseUrl = "https://api.deepseek.com", model = "deepseek-chat", timeoutMs = 90_000, maxRetries = 1, temperature = 0, maxTokens = 3_000, thinking = { type: "disabled" }, fetchImpl = globalThis.fetch, sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)), logger = null } = {}) {
     this.apiKey = apiKey;
     this.baseUrl = String(baseUrl).replace(/\/+$/u, "");
     this.model = model;
@@ -54,13 +67,14 @@ export class ResilientLlmClient {
     this.maxRetries = maxRetries;
     this.temperature = temperature;
     this.maxTokens = maxTokens;
+    this.thinking = thinking;
     this.fetchImpl = fetchImpl;
     this.sleep = sleep;
     this.logger = logger;
   }
 
   status() {
-    return { provider: "deepseek", configured: Boolean(this.apiKey), model: this.model, live_calls_allowed: true, json_parser: "balanced-object" };
+    return { provider: "deepseek", configured: Boolean(this.apiKey), model: this.model, thinking: this.thinking?.type ?? null, live_calls_allowed: true, json_parser: "balanced-object" };
   }
 
   async chatJson({ system, user, signal, requestId = null, sessionId = null, stage = "unknown", callLabel = null, onMetrics = null } = {}) {
@@ -76,11 +90,12 @@ export class ResilientLlmClient {
       let errorCode = null;
       let retrying = false;
       let usage = usageStats(null);
+      let responseMeta = { finish_reason: null, content_type: null, content_length: null };
       try {
         const response = await this.fetchImpl(`${this.baseUrl}/chat/completions`, {
           method: "POST",
           headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ model: this.model, temperature: this.temperature, max_tokens: this.maxTokens, response_format: { type: "json_object" }, messages: [{ role: "system", content: system }, { role: "user", content: user }] }),
+          body: JSON.stringify({ model: this.model, temperature: this.temperature, max_tokens: this.maxTokens, ...(this.thinking ? { thinking: this.thinking } : {}), response_format: { type: "json_object" }, messages: [{ role: "system", content: system }, { role: "user", content: user }] }),
           signal: controller.signal,
         });
         if (!response.ok) {
@@ -95,7 +110,17 @@ export class ResilientLlmClient {
         }
         const payload = JSON.parse(await response.text());
         usage = usageStats(payload?.usage);
-        const value = extractJsonObject(payload?.choices?.[0]?.message?.content);
+        const choice = payload?.choices?.[0];
+        const rawContent = choice?.message?.content;
+        const content = normalizeMessageContent(rawContent);
+        responseMeta = {
+          finish_reason: choice?.finish_reason ?? null,
+          content_type: rawContent === null || rawContent === undefined ? "missing" : Array.isArray(rawContent) ? "array" : typeof rawContent,
+          content_length: typeof content === "string" ? content.length : 0,
+        };
+        if (choice?.finish_reason === "length") throw appError("LLM_OUTPUT_TRUNCATED");
+        if (choice?.finish_reason === "content_filter") throw appError("LLM_CONTENT_FILTER");
+        const value = extractJsonObject(content);
         outcome = "success";
         return value;
       } catch (error) {
@@ -133,6 +158,7 @@ export class ResilientLlmClient {
           retrying,
           error_code: errorCode,
           latency_ms: Math.max(0, Math.round(performance.now() - startedAt)),
+          response_meta: responseMeta,
           ...usage,
         };
         try { onMetrics?.(metric); } catch { /* metrics must never change the model result */ }

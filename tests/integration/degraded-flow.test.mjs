@@ -26,5 +26,8 @@ test("real composition falls back to the local dataset when live Zhihu calls are
   assert.equal(result.action, "respond");
   assert.equal(result.retrieval.meta.degraded, true);
   assert.equal(result.retrieval.meta.degraded_from, "zhihu");
+  assert.equal(result.analysis.status, "completed");
+  const completed = await app.services.sessionService.get(session.session_id);
+  assert.equal(completed.analysis.status, "completed");
   assert.match(JSON.stringify(result.answer.limitations), /本地案例库/u);
 });

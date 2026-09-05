@@ -68,8 +68,15 @@ test("HTTP flow creates a session, asks once, retrieves, answers, and exposes so
   });
   assert.equal(answered.response.status, 200);
   assert.equal(answered.body.data.action, "respond");
+  assert.equal(answered.body.data.state, "WAITING_FOR_FOLLOW_UP");
+  assert.ok(answered.body.data.source_selection.groups.length > 0);
+  assert.ok(answered.body.data.source_selection.groups.every((group) => group.items.length <= 3));
+  assert.equal(answered.body.data.analysis.status, "completed");
   assert.ok(answered.body.data.answer.sections.length > 0);
-  const sourceId = answered.body.data.retrieval.source_ids[0];
+  const completed = await jsonRequest(running.baseUrl, `/api/sessions/${sessionId}`);
+  assert.equal(completed.body.data.analysis.status, "completed");
+  assert.ok(completed.body.data.current_answer.sections.length > 0);
+  const sourceId = completed.body.data.retrievals.at(-1).source_ids[0];
   assert.ok(sourceId);
 
   const source = await jsonRequest(running.baseUrl, `/api/sources/${encodeURIComponent(sourceId)}`);

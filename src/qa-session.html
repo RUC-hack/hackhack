@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f6f3ec">
+  <title>一段正在展开的对话｜见众</title>
+  <meta name="description" content="见众问答：在对话中慢慢说清楚自己的处境。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="staging_src/journey.css">
+  <link rel="stylesheet" href="qa.css">
+</head>
+<body class="qa-page qa-session-page journey-page journey-qa-page" data-qa-page="session">
+  <a class="skip-link" href="#main">跳至正文</a>
+  <header class="site-header qa-header" id="site-header">
+    <nav class="nav-shell" aria-label="主要导航">
+      <a class="brand" href="index.html#top" aria-label="见众首页"><img class="brand-mark qa-brand-mark" src="staging_src/logo-mark.svg" alt="" aria-hidden="true"><span>见众</span></a>
+      <button class="menu-toggle" type="button" aria-label="打开导航菜单" aria-expanded="false" aria-controls="nav-links"><span></span><span></span></button>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html#question">为什么</a><a href="index.html#framework">四个空间</a><a href="index.html#trajectories">相似人生</a><a href="index.html#rehearsal">人生预演</a><a href="qa.html">问答测试</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" class="qa-main qa-session-main">
+    <section class="qa-conversation container live-session-active" id="conversation" aria-labelledby="conversation-title">
+      <div class="qa-search-ritual" id="qa-search-ritual" hidden aria-hidden="true">
+        <div class="qa-search-copy">
+          <p class="eyebrow" id="qa-search-eyebrow">SEARCHING THE HUMAN ARCHIVE</p>
+          <h2 id="qa-search-title">正在寻找可能与你有<br>相似经历的知友……</h2>
+          <ol class="qa-analysis" id="qa-analysis-stages" aria-label="当前处理阶段"></ol>
+          <p class="qa-search-result" id="qa-search-result">正在让你的问题进入一片更大的人生样本。</p>
+        </div>
+        <div class="qa-crowd-stream" id="qa-crowd-stream" aria-hidden="true"></div>
+      </div>
+      <div class="qa-conversation-heading">
+        <div><p class="eyebrow">CURRENT QUESTION</p><h1 id="conversation-title">一段正在展开的对话</h1></div>
+        <button class="text-button" id="reset-button" type="button">重新开始 ↗</button>
+      </div>
+      <div class="qa-status" id="qa-status" role="status" aria-live="polite"></div>
+      <div class="qa-messages" id="qa-messages" aria-live="polite"></div>
+      <div class="qa-error" id="qa-error" role="alert" hidden></div>
+      <form class="qa-message-form" id="message-form">
+        <label class="sr-only" for="message-input">继续输入</label>
+        <textarea id="message-input" rows="3" maxlength="8000" placeholder="补充你的情况，或回答我们的问题。" required></textarea>
+        <button class="button button-dark" type="submit"><span>发送</span><span aria-hidden="true">↑</span></button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer qa-footer"><div class="container footer-bottom"><span>© 2026 见众</span><a href="#main" data-scroll-top>回到顶部 ↑</a></div></footer>
+  <script src="app-config.js"></script>
+  <script>window.APP_CONFIG = { ...(window.APP_CONFIG || {}), apiBaseUrl: window.APP_CONFIG?.apiBaseUrl || "http://127.0.0.1:3000" };</script>
+  <script src="qa.js"></script>
+</body>
+</html>

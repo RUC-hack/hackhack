@@ -1,6 +1,7 @@
 import { appError } from "../contracts/errors.mjs";
 import { assertAgentDecision, assertAnswerEnvelope } from "../contracts/answer.mjs";
-import { buildAnswerPrompt, buildDecisionPrompt } from "./prompts.mjs";
+import { assertSourceSelection } from "../contracts/source-selection.mjs";
+import { buildAnswerPrompt, buildDecisionPrompt, buildSourceSelectionPrompt } from "./prompts.mjs";
 
 function normalizeDecision(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return value;
@@ -34,8 +35,12 @@ export class LlmGateway {
     try {
       const value = type === "decision"
         ? await this.client.chatJson({ system: buildDecisionPrompt(input), user: "根据当前会话决定下一步。", signal })
-        : await this.client.chatJson({ system: buildAnswerPrompt(input), user: "根据证据生成当前综合。", signal });
-      return type === "decision" ? assertAgentDecision(normalizeDecision(value)) : assertAnswerEnvelope(value);
+        : type === "selection"
+          ? await this.client.chatJson({ system: buildSourceSelectionPrompt(input), user: "根据当前问题筛选候选材料。", signal })
+          : await this.client.chatJson({ system: buildAnswerPrompt(input), user: "根据证据生成当前综合。", signal });
+      if (type === "decision") return assertAgentDecision(normalizeDecision(value));
+      if (type === "selection") return assertSourceSelection(value, { sourceIds: new Set((input.evidence_packets ?? []).map((packet) => packet.source_id)) });
+      return assertAnswerEnvelope(value);
     } catch (error) {
       const invalidCode = type === "decision" ? "LLM_INVALID_RESPONSE" : "ANSWER_INVALID";
       const isValidationError = error instanceof TypeError;
@@ -43,14 +48,18 @@ export class LlmGateway {
       if (isValidationError) error = appError("LLM_INVALID_RESPONSE", { cause: error });
       const repairInput = type === "decision"
         ? { task: "repair decision JSON", session: input }
-        : { task: "repair answer JSON", answer_input: input };
+        : type === "selection"
+          ? { task: "repair source selection JSON", selection_input: input }
+          : { task: "repair answer JSON", answer_input: input };
       const repaired = await this.client.chatJson({
-        system: `只修复 JSON 结构并返回合法 ${type === "decision" ? "AgentDecision" : "AnswerEnvelope"}，不添加新事实。${buildAnswerPrompt(repairInput)}`,
+        system: `只修复 JSON 结构并返回合法 ${type === "decision" ? "AgentDecision" : type === "selection" ? "SourceSelection" : "AnswerEnvelope"}，不添加新事实。${type === "selection" ? buildSourceSelectionPrompt(input) : buildAnswerPrompt(repairInput)}`,
         user: "上一次输出无法校验，请只返回修复后的 JSON。",
         signal,
       });
       try {
-        return type === "decision" ? assertAgentDecision(normalizeDecision(repaired)) : assertAnswerEnvelope(repaired);
+        if (type === "decision") return assertAgentDecision(normalizeDecision(repaired));
+        if (type === "selection") return assertSourceSelection(repaired, { sourceIds: new Set((input.evidence_packets ?? []).map((packet) => packet.source_id)) });
+        return assertAnswerEnvelope(repaired);
       } catch (validationError) {
         throw appError(invalidCode, { cause: validationError });
       }
@@ -59,6 +68,10 @@ export class LlmGateway {
 
   decideNextAction(sessionView, { signal } = {}) {
     return this.#validated("decision", sessionView, signal);
+  }
+
+  selectSources(input, { signal } = {}) {
+    return this.#validated("selection", input, signal);
   }
 
   buildGroundedAnswer(answerInput, { signal } = {}) {

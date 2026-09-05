@@ -55,6 +55,22 @@ test("validated gateway repairs answer citations before they reach AnswerBuilder
   assert.equal(calls, 2);
 });
 
+test("validated gateway repairs source selection to the retrieved source set", async () => {
+  let calls = 0;
+  const gateway = new ValidatedLlmGateway({ client: { async chatJson({ user }) {
+    calls += 1;
+    if (calls === 1) {
+      return { groups: [{ key: "case", title: "相关经历", description: "说明", items: [{ source_id: "missing", reason: "相关" }] }] };
+    }
+    assert.match(user, /source_selection_source_id_not_found_missing/u);
+    return { groups: [{ key: "case", title: "相关经历", description: "说明", items: [{ source_id: "zhihu:answer:1", reason: "相关" }] }] };
+  } } });
+
+  const selection = await gateway.selectSources({ evidence_packets: [{ source_id: "zhihu:answer:1" }] });
+  assert.equal(selection.groups[0].items[0].source_id, "zhihu:answer:1");
+  assert.equal(calls, 2);
+});
+
 test("validated gateway stops after its bounded repair budget", async () => {
   let calls = 0;
   const gateway = new ValidatedLlmGateway({

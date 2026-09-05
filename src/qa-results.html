@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#173d35">
+  <title>相似人生路径｜见众</title>
+  <meta name="description" content="浏览走过相似道路的人生路径、人物样本与选择之后的真实质感。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="staging_src/journey.css"><link rel="stylesheet" href="qa.css">
+</head>
+<body class="qa-page qa-results-page journey-page journey-qa-page" data-qa-page="results">
+  <a class="skip-link" href="#main">跳至正文</a>
+  <header class="site-header qa-header" id="site-header">
+    <nav class="nav-shell" aria-label="主要导航">
+      <a class="brand" href="index.html#top" aria-label="见众首页"><img class="brand-mark qa-brand-mark" src="staging_src/logo-mark.svg" alt="" aria-hidden="true"><span>见众</span></a>
+      <button class="menu-toggle" type="button" aria-label="打开导航菜单" aria-expanded="false" aria-controls="nav-links"><span></span><span></span></button>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html#question">为什么</a><a href="index.html#framework">四个空间</a><a href="index.html#trajectories">相似人生</a><a href="index.html#rehearsal">人生预演</a><a href="qa.html">问答测试</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" class="qa-main qa-results-main">
+    <section class="qa-results" id="qa-results" aria-labelledby="qa-results-title">
+      <section class="journey-results-hero qa-results-hero"><div class="container"><p class="eyebrow">SIMILAR LIVES · MATCHED PATHS</p><h1 id="qa-results-title">关于「<span id="qa-result-question"></span>」，<br>TA 们是这样做的……</h1><p class="journey-results-intro">这里没有一条被计算出的正确道路。先看看不同的人怎样选择、承担，又怎样在后来重新理解当时的自己。</p></div></section>
+      <section class="journey-paths-section qa-results-paths" id="qa-paths-list" aria-labelledby="qa-paths-title"><div class="container"><div class="journey-section-title"><p class="eyebrow">01 · THREE DIRECTIONS</p><h2 id="qa-paths-title">有哪几条路？</h2></div><div class="journey-path-list" id="qa-path-list"></div></div></section>
+      <section class="qa-answer-section" id="qa-synthesis" aria-labelledby="qa-synthesis-title"><div class="container"><div class="journey-section-title"><p class="eyebrow">02 · JIANZHONG'S RESPONSE</p><h2 id="qa-synthesis-title">把这些经历放回你的问题</h2></div><article class="qa-answer-view" id="qa-answer-view" aria-live="polite"><p class="qa-answer-summary" id="qa-answer-summary"></p><div class="qa-answer-sections" id="qa-answer-sections"></div><div class="qa-answer-notes" id="qa-answer-notes"></div></article></div></section>
+      <section class="journey-people-section qa-results-people" id="qa-people-pool" aria-labelledby="qa-people-title"><div class="container"><header class="journey-people-heading"><p class="eyebrow">03 · PEOPLE IN THIS ANSWER</p><h2 id="qa-people-title">这条路上的人</h2><p id="qa-people-description"></p></header><div class="journey-people-layout"><div class="journey-person-list" id="qa-person-list" role="listbox" aria-label="选择一位知乎来源样本"></div><article class="journey-person-detail" id="qa-person-detail" aria-live="polite"></article></div><p class="content-note">人物卡片引用可回看的知乎公开页面。摘要只保留页面能够支持的内容，不补写答主身份与人生结局；这些经历是参照，不是预测或标准答案。</p></div></section>
+      <section class="journey-crowd-question qa-crowd-question" id="qa-ask-crowd" aria-labelledby="qa-crowd-title"><div class="container narrow"><p class="eyebrow">ASK THE CROWD</p><h2 id="qa-crowd-title">还想问问更多人？</h2><p>把刚刚看到的经历带回对话，再补充一个你真正想确认的细节。</p><button class="button button-light" id="qa-continue-question" type="button">继续追问 <span aria-hidden="true">→</span></button></div></section>
+    </section>
+  </main>
+
+  <footer class="footer qa-footer"><div class="container footer-bottom"><span>© 2026 见众</span><a href="#main" data-scroll-top>回到顶部 ↑</a></div></footer>
+  <script src="app-config.js"></script>
+  <script>window.APP_CONFIG = { ...(window.APP_CONFIG || {}), apiBaseUrl: window.APP_CONFIG?.apiBaseUrl || "http://127.0.0.1:3000" };</script>
+  <script src="qa.js"></script>
+</body>
+</html>

@@ -17,6 +17,7 @@ import { RetrievalService } from "./services/retrieval-service.mjs";
 import { SessionService } from "./services/session-service.mjs";
 import { AgentOrchestrator } from "./services/agent-orchestrator.mjs";
 import { AnswerBuilder } from "./services/answer-builder.mjs";
+import { SourceSelectionService } from "./services/source-selection-service.mjs";
 import { EvidenceService } from "./services/evidence-service.mjs";
 import { SafetyService } from "./services/safety-service.mjs";
 import { ValidatedLlmGateway } from "./services/validated-llm-gateway.mjs";
@@ -86,12 +87,14 @@ export function createApp(overrides = {}) {
   const sessionService = overrides.sessionService ?? new SessionService({ store: sessionStore, now, idFactory, maxQuestions: config.max_questions });
   const evidenceService = overrides.evidenceService ?? new EvidenceService({ now, idFactory });
   const answerBuilder = overrides.answerBuilder ?? new AnswerBuilder({ llmGateway });
+  const sourceSelectionService = overrides.sourceSelectionService ?? new SourceSelectionService({ llmGateway, now, idFactory });
   const safetyService = overrides.safetyService ?? new SafetyService();
   const orchestrator = overrides.orchestrator ?? new AgentOrchestrator({
     sessionService,
     retrievalService,
     evidenceService,
     answerBuilder,
+    sourceSelectionService,
     llmGateway,
     safetyService,
     sourceStore,
@@ -174,7 +177,7 @@ export function createApp(overrides = {}) {
     createServer: () => createHttpServer(handler),
     config,
     stores: { sessionStore, sourceStore },
-    services: { sessionService, retrievalService, llmGateway, orchestrator },
+    services: { sessionService, retrievalService, evidenceService, answerBuilder, sourceSelectionService, llmGateway, orchestrator },
     providers: { primaryProvider, fallbackProvider, localProvider, mockProvider, zhihuProvider },
   };
 }

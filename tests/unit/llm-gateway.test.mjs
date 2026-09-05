@@ -64,6 +64,52 @@ test("resilient LLM client records call latency and token usage without logging 
   assert.equal("user" in logs[0], false);
 });
 
+test("resilient LLM client disables hidden reasoning by default for fast JSON calls", async () => {
+  let requestBody;
+  const client = new ResilientLlmClient({
+    apiKey: "test",
+    maxRetries: 0,
+    fetchImpl: async (_url, options) => {
+      requestBody = JSON.parse(options.body);
+      return response({ choices: [{ message: { content: '{"ok":true}' } }] });
+    },
+  });
+
+  await client.chatJson({ system: "x", user: "y" });
+  assert.deepEqual(requestBody.thinking, { type: "disabled" });
+  assert.equal(client.status().thinking, "disabled");
+});
+
+test("resilient LLM client accepts text content parts and records safe response metadata", async () => {
+  const logs = [];
+  const client = new ResilientLlmClient({
+    apiKey: "test",
+    maxRetries: 0,
+    logger: { async log(event) { logs.push(event); } },
+    fetchImpl: async () => response({ choices: [{ finish_reason: "stop", message: { content: [{ type: "text", text: '{"ok":true}' }] } }] }),
+  });
+  assert.deepEqual(await client.chatJson({ system: "x", user: "y" }), { ok: true });
+  assert.deepEqual(logs[0].response_meta, { finish_reason: "stop", content_type: "array", content_length: 11 });
+});
+
+test("resilient LLM client classifies length-truncated output", async () => {
+  const client = new ResilientLlmClient({
+    apiKey: "test",
+    maxRetries: 0,
+    fetchImpl: async () => response({ choices: [{ finish_reason: "length", message: { content: "" } }] }),
+  });
+  await assert.rejects(client.chatJson({ system: "x", user: "y" }), (error) => error.code === "LLM_OUTPUT_TRUNCATED");
+});
+
+test("resilient LLM client classifies content-filtered output", async () => {
+  const client = new ResilientLlmClient({
+    apiKey: "test",
+    maxRetries: 0,
+    fetchImpl: async () => response({ choices: [{ finish_reason: "content_filter", message: { content: "" } }] }),
+  });
+  await assert.rejects(client.chatJson({ system: "x", user: "y" }), (error) => error.code === "LLM_CONTENT_FILTER");
+});
+
 test("invalid model JSON is repaired at most once and then validated", async () => {
   let calls = 0;
   const gateway = new LlmGateway({

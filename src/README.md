@@ -10,9 +10,9 @@
 npm start
 ```
 
-启动后访问 `http://localhost:8080`，问答测试页为 `http://localhost:8080/qa.html`，后端健康检查为 `http://localhost:3000/api/health`。也可以分别运行 `npm run start:backend` 和 `npm run start:frontend`。
+启动后访问 `http://localhost:8080`，问答起始页为 `http://localhost:8080/qa.html`，后端健康检查为 `http://localhost:3000/api/health`。也可以分别运行 `npm run start:backend` 和 `npm run start:frontend`。
 
-`qa.html` 默认自动分流：毕业、就业、求职、读博等已有主题使用本地精选内容完成“问题—追问—路径—知乎公开来源”流程，其他问题进入原有实时后端链路。开发联调时可用 `qa.html?mode=live` 强制实时链路，或用 `qa.html?mode=curated` 强制精选链路。
+问答流程拆成三个页面：`qa.html` 负责写下问题，`qa-session.html` 负责多轮对话，`qa-results.html` 负责展示路径、完整 AI 回答与知乎公开来源。页面之间通过同一标签页的 `sessionStorage` 和 URL 中的 `session_id` 交接，因此刷新结果页仍可回到当前会话。毕业、就业、求职、读博等已有主题使用本地精选内容完成“问题—追问—路径—知乎公开来源”流程，其他问题进入实时后端链路。开发联调时可用 `qa.html?mode=live` 强制实时链路，或用 `qa.html?mode=curated` 强制精选链路。
 
 如果只看静态策展页，直接双击 `index.html` 也可以演示；为避免浏览器对本地资源的限制，也可以在本目录运行：
 
@@ -27,7 +27,8 @@ python -m http.server 8080
 - `index.html`：语义化页面结构与 SEO 信息
 - `styles.css`：视觉系统、响应式布局、动效与无障碍适配
 - `app.js`：数据渲染、导航、移动菜单、视口动画、本地图片优先和网络回退
-- `qa.html` / `qa.js` / `qa.css`：问答测试页及后端 API 调用
+- `qa.html` / `qa-session.html` / `qa-results.html`：问答起始页、独立多轮对话页与独立结果页
+- `qa.js` / `qa.css`：问答状态交接、后端 API 调用、路径/回答渲染与页面过渡
 - `assets/images/`：本地策展图片；文件缺失或加载失败时自动回退到远程图片
 
 ## Unsplash 图片

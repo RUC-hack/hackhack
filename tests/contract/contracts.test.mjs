@@ -59,3 +59,37 @@ test("answer contract keeps unknown section kinds and validates citations", () =
   assert.doesNotThrow(() => assertAnswerEnvelope(answer, { sourceIds: new Set([source.source_id]) }));
   assert.equal(validateAnswerEnvelope({ ...answer, sections: [{ ...answer.sections[0], source_ids: ["missing"] }] }, { sourceIds: new Set([source.source_id]) }).valid, false);
 });
+
+test("answer contract bounds the visible answer shape", () => {
+  const answer = {
+    summary: "当前综合",
+    sections: Array.from({ length: 5 }, (_, index) => ({ kind: "case", title: `经历 ${index}`, content: "内容", source_ids: [source.source_id] })),
+    assumptions: [],
+    unknowns: ["未知"],
+    limitations: [],
+    next_actions: [],
+  };
+  const validation = validateAnswerEnvelope(answer, { sourceIds: new Set([source.source_id]) });
+  assert.equal(validation.valid, false);
+  assert.ok(validation.errors.includes("sections_too_many"));
+});
+
+test("answer contract allows three cited sources and rejects a fourth", () => {
+  const answer = {
+    summary: "当前综合",
+    sections: [{ kind: "case", title: "经历", content: "文本", source_ids: ["local:1", "local:2", "local:3"] }],
+    assumptions: [],
+    unknowns: [],
+    limitations: [],
+    next_actions: [],
+  };
+  const validation = validateAnswerEnvelope(answer, { sourceIds: new Set(["local:1", "local:2", "local:3"]) });
+  assert.equal(validation.valid, true);
+
+  const overflow = validateAnswerEnvelope({
+    ...answer,
+    sections: [{ ...answer.sections[0], source_ids: ["local:1", "local:2", "local:3", "local:4"] }],
+  }, { sourceIds: new Set(["local:1", "local:2", "local:3", "local:4"]) });
+  assert.equal(overflow.valid, false);
+  assert.ok(overflow.errors.includes("section_0_sources_too_many"));
+});

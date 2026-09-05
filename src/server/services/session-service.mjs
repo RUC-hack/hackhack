@@ -13,7 +13,7 @@ function clone(value) {
 }
 
 export class SessionService {
-  constructor({ store, now = () => new Date(), idFactory = randomUUID, maxQuestions = 2 } = {}) {
+  constructor({ store, now = () => new Date(), idFactory = randomUUID, maxQuestions = 4 } = {}) {
     if (!store || typeof store.get !== "function" || typeof store.save !== "function") throw new TypeError("SessionService requires a session store");
     this.store = store;
     this.now = now;

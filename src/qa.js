@@ -3,6 +3,9 @@
 
   const apiBaseUrl = (window.APP_CONFIG?.apiBaseUrl || "http://127.0.0.1:3000").replace(/\/$/u, "");
   const routeOverride = new URLSearchParams(window.location.search).get("mode");
+  const pageKind = document.body?.dataset.qaPage || (location.pathname.endsWith("qa-results.html") ? "results" : location.pathname.endsWith("qa-session.html") ? "session" : "start");
+  const QA_HANDOFF_KEY = "jianzhong.qa.handoff";
+  const QA_RESULT_KEY = "jianzhong.qa.result";
   const CURATED_TOPIC_PATTERN = /(?:毕业|就业|校招|应届|求职|找工作|工作机会|先工作|读博|博士|大厂|回家乡|返乡)/iu;
   const STUDY_WORK_PATTERN = /(?:(?:考研|读研).{0,12}(?:工作|就业)|(?:工作|就业).{0,12}(?:考研|读研))/iu;
 
@@ -78,6 +81,8 @@
     sessionId: null,
     busy: false,
     turn: 0,
+    questionsAsked: 0,
+    maxQuestions: 4,
     ritualTimers: [],
     sourceCache: new Map(),
     matchedPaths: [],
@@ -85,7 +90,9 @@
     activeSourceId: null,
     demoStep: 0,
     flowMode: null,
+    problemText: "",
   };
+  const SAVED_SOURCES_KEY = "jianzhong.savedPeople";
   const $ = (selector) => document.querySelector(selector);
   const refs = {
     startForm: $("#start-form"),
@@ -101,6 +108,7 @@
     messages: $("#qa-messages"),
     status: $("#qa-status"),
     error: $("#qa-error"),
+    startError: $("#qa-start-error"),
     messageForm: $("#message-form"),
     messageInput: $("#message-input"),
     reset: $("#reset-button"),
@@ -111,7 +119,47 @@
     peopleDescription: $("#qa-people-description"),
     personList: $("#qa-person-list"),
     personDetail: $("#qa-person-detail"),
+    continueQuestion: $("#qa-continue-question"),
+    answerView: $("#qa-answer-view"),
+    answerSummary: $("#qa-answer-summary"),
+    answerSections: $("#qa-answer-sections"),
+    answerNotes: $("#qa-answer-notes"),
   };
+
+  function getProblemText() {
+    return String(state.problemText || refs.problemInput?.value || "").trim();
+  }
+
+  function readSessionStorage(key) {
+    try {
+      const value = sessionStorage.getItem(key);
+      return value ? JSON.parse(value) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeSessionStorage(key, value) {
+    try { sessionStorage.setItem(key, JSON.stringify(value)); } catch (_) { /* 存储受限时仍保留当前页面流程 */ }
+  }
+
+  function navigateWithTransition(pathname, params = {}) {
+    const url = new URL(pathname, location.href);
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, value);
+    });
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      location.assign(url.href);
+      return;
+    }
+    document.body.classList.add("is-leaving");
+    window.setTimeout(() => location.assign(url.href), 300);
+  }
+
+  function saveHandoff({ mode, sessionId = null, problem, prompt = "" }) {
+    writeSessionStorage(QA_HANDOFF_KEY, { mode, sessionId, problem, prompt, savedAt: Date.now() });
+  }
 
   function makeTurnId() {
     return globalThis.crypto?.randomUUID?.() || `turn-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -176,9 +224,22 @@
     return health;
   }
 
-  function setStatus(text) { refs.status.textContent = text || ""; }
-  function showError(error) { refs.error.textContent = explainError(error); refs.error.hidden = false; }
-  function clearError() { refs.error.textContent = ""; refs.error.hidden = true; }
+  function setStatus(text) { if (refs.status) refs.status.textContent = text || ""; }
+  function showError(error) {
+    const message = explainError(error);
+    if (refs.error) {
+      refs.error.textContent = message;
+      refs.error.hidden = false;
+    }
+    if (refs.startError) refs.startError.textContent = state.sessionId ? "" : message;
+  }
+  function clearError() {
+    if (refs.error) {
+      refs.error.textContent = "";
+      refs.error.hidden = true;
+    }
+    if (refs.startError) refs.startError.textContent = "";
+  }
 
   function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>'"]/g, (character) => ({
@@ -188,6 +249,42 @@
       "'": "&#39;",
       '"': "&quot;",
     })[character]);
+  }
+
+  function displayAuthor(value) {
+    const author = String(value || "").trim();
+    return author && !/^(?:知乎(?:公开|未署名)?|匿名)答主$/u.test(author) ? author : "未署名答主";
+  }
+
+  function getSavedSources() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SAVED_SOURCES_KEY) || "[]");
+      return new Set(Array.isArray(parsed) ? parsed.filter(Boolean) : []);
+    } catch (_) {
+      return new Set();
+    }
+  }
+
+  function toggleSavedSource(sourceId) {
+    const saved = getSavedSources();
+    if (saved.has(sourceId)) saved.delete(sourceId);
+    else saved.add(sourceId);
+    try { localStorage.setItem(SAVED_SOURCES_KEY, JSON.stringify([...saved])); } catch (_) { /* 隐私模式下忽略 */ }
+    return saved.has(sourceId);
+  }
+
+  function makePersonQuestion(source) {
+    const author = displayAuthor(source.author);
+    const title = source.title || "这条经历";
+    return `看完${author}的「${title}」，我也在面对“${getProblemText()}”。如果回到当时，哪一个具体日常或代价最影响你的选择？`;
+  }
+
+  function scrollToMessageForm() {
+    if (!refs.messageForm) return;
+    const header = document.querySelector("#site-header");
+    const headerHeight = header?.getBoundingClientRect().height || 78;
+    const top = Math.max(0, refs.messageForm.getBoundingClientRect().top + window.scrollY - headerHeight - 24);
+    window.scrollTo({ top, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }
 
   function figureMarkup(index, className = "qa-path-person") {
@@ -252,9 +349,9 @@
     refs.analysisStages.replaceChildren();
     ritual.stages.forEach(([title, body], index) => {
       const stage = document.createElement("li");
-      stage.className = "qa-analysis-stage";
+      stage.className = "journey-analysis-stage qa-analysis-stage";
       const label = document.createElement("span");
-      label.className = "qa-analysis-label";
+      label.className = "journey-analysis-label qa-analysis-label";
       label.textContent = `0${index + 1}`;
       const heading = document.createElement("strong");
       heading.textContent = title;
@@ -280,9 +377,7 @@
       refs.searchResult.textContent = mode === "retrieval" ? "找到一组可以回看的生活参照。" : "你的问题已经有了继续展开的方向。";
       [...refs.crowdStream.querySelectorAll(".qa-crowd-figure")].filter((_, index) => index % 9 === 2).forEach((person) => person.classList.add("is-matched"));
     }, reducedMotion ? 280 : 3000));
-    window.requestAnimationFrame(() => {
-      if (mode === "retrieval") refs.searchRitual.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
-    });
+    window.requestAnimationFrame(() => refs.searchRitual.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" }));
   }
 
   function appendMessage(role, text) {
@@ -295,8 +390,16 @@
     content.textContent = text;
     article.append(label, content);
     refs.messages.append(article);
-    article.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    scrollMessagesToEnd();
     return article;
+  }
+
+  function scrollMessagesToEnd() {
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+    window.requestAnimationFrame(() => {
+      if (!refs.messages) return;
+      refs.messages.scrollTo({ top: refs.messages.scrollHeight, behavior });
+    });
   }
 
   function appendAssistantWithActions(text, suggestions = []) {
@@ -313,6 +416,7 @@
       actions.append(button);
     }
     article.append(actions);
+    scrollMessagesToEnd();
     return article;
   }
 
@@ -324,23 +428,21 @@
   function setDemoBusy(busy) {
     state.busy = busy;
     document.body.classList.toggle("is-demo-busy", busy);
-    refs.messageInput.disabled = busy;
-    refs.messageForm.querySelector("button").disabled = busy;
+    if (refs.messageInput) refs.messageInput.disabled = busy;
+    if (refs.messageForm) refs.messageForm.querySelector("button").disabled = busy;
   }
 
   async function runDemoInitial(problem) {
     state.sessionId = "local-demo";
     state.demoStep = 0;
-    refs.startForm.hidden = true;
-    refs.conversation.hidden = false;
-    refs.workspace.classList.add("is-exiting");
+    state.problemText = problem;
+    if (refs.startForm) refs.startForm.hidden = true;
+    if (refs.conversation) refs.conversation.hidden = false;
+    if (refs.workspace) refs.workspace.classList.add("is-exiting");
     finishStartLayout();
     appendMessage("user", problem);
     setDemoBusy(true);
-    startSearchRitual("understanding");
     setStatus("正在听见你的问题…");
-    await waitForDemoRitual();
-    stopSearchRitual();
     appendAssistantWithActions(
       "如果只能先确认一件事：你此刻更想看清哪一种代价？这会改变我们优先回看的经历。",
       ["更担心错过工作机会", "更担心放弃研究兴趣", "更在意离家与生活成本"],
@@ -348,7 +450,7 @@
     state.demoStep = 1;
     setStatus("任选一项，或直接输入一句话。");
     setDemoBusy(false);
-    refs.messageInput.focus();
+    refs.messageInput?.focus();
   }
 
   async function runDemoTurn(message) {
@@ -361,20 +463,20 @@
     setStatus("正在整理与你的问题有关的人生路径…");
     await waitForDemoRitual();
     stopSearchRitual();
-    appendAnswer(DEMO_ANSWER);
-    await renderMatchedPaths(DEMO_ANSWER);
+    openResultsPage(DEMO_ANSWER);
     state.demoStep = 2;
-    setStatus("参照已整理完成，你可以展开路径并回看公开来源。");
     setDemoBusy(false);
-    refs.messageInput.disabled = true;
-    refs.messageInput.placeholder = "这次参照已整理完成，可点击“重新开始”再次梳理。";
-    refs.messageForm.querySelector("button").disabled = true;
+    if (refs.messageInput) {
+      refs.messageInput.disabled = true;
+      refs.messageInput.placeholder = "这次参照已整理完成，可点击“重新开始”再次梳理。";
+    }
+    refs.messageForm?.querySelector("button")?.setAttribute("disabled", "true");
   }
 
-  function appendAnswer(answer) {
-    const article = appendMessage("assistant", answer?.summary || "我整理了一组可以回看的经验参照。");
-    const body = document.createElement("div");
-    body.className = "qa-answer-body";
+  function renderAnswerView(answer) {
+    if (!refs.answerView) return;
+    refs.answerSummary.textContent = answer?.summary || "我整理了一组可以回看的经验参照。";
+    refs.answerSections.replaceChildren();
     for (const section of answer?.sections || []) {
       const block = document.createElement("div");
       block.className = "qa-answer-block";
@@ -383,26 +485,54 @@
       const content = document.createElement("p");
       content.textContent = typeof section.content === "string" ? section.content : JSON.stringify(section.content, null, 2);
       block.append(title, content);
-      body.append(block);
+      refs.answerSections.append(block);
       const sourceIds = Array.isArray(section.source_ids) ? section.source_ids : [];
       if (sourceIds.length) loadSources(sourceIds, block);
     }
-    const limitations = Array.isArray(answer?.limitations) ? answer.limitations : [];
-    if (limitations.length) {
+    refs.answerNotes.replaceChildren();
+    const noteGroups = [
+      ["前提", answer?.assumptions],
+      ["仍然未知", answer?.unknowns],
+      ["阅读说明", answer?.limitations],
+      ["可以继续想想", answer?.next_actions],
+    ];
+    for (const [title, values] of noteGroups) {
+      if (!Array.isArray(values) || !values.length) continue;
       const note = document.createElement("div");
-      note.className = "qa-limitations";
+      note.className = "qa-answer-note";
       const heading = document.createElement("strong");
-      heading.textContent = "阅读说明";
-      const text = document.createElement("span");
-      text.textContent = limitations.join("\n");
+      heading.textContent = title;
+      const text = document.createElement("p");
+      text.textContent = values.join("\n");
       note.append(heading, text);
-      body.append(note);
+      refs.answerNotes.append(note);
     }
-    article.append(body);
+    refs.answerView.hidden = false;
+  }
+
+  function appendAnswer(answer) {
+    if (refs.answerView) {
+      renderAnswerView(answer);
+      return refs.answerView;
+    }
+    const article = appendMessage("assistant", answer?.summary || "我整理了一组可以回看的经验参照。");
     return article;
   }
 
+  function openResultsPage(answer) {
+    const problem = getProblemText();
+    writeSessionStorage(QA_RESULT_KEY, {
+      sessionId: state.sessionId,
+      mode: state.flowMode || "live",
+      problem,
+      answer,
+      savedAt: Date.now(),
+    });
+    navigateWithTransition("qa-results.html", { session_id: state.sessionId, mode: state.flowMode || "live" });
+  }
+
   function scrollToLiveSession() {
+    if (!refs.conversation) return;
     const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
     // 等待 workspace 从文档流移除后再计算位置，避免滚动落在旧布局的位置。
     window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
@@ -414,9 +544,9 @@
   }
 
   function finishStartLayout() {
-    refs.workspace.classList.add("session-started");
-    refs.workspace.setAttribute("aria-hidden", "true");
-    refs.conversation.classList.add("live-session-active");
+    refs.workspace?.classList.add("session-started");
+    refs.workspace?.setAttribute("aria-hidden", "true");
+    refs.conversation?.classList.add("live-session-active");
     scrollToLiveSession();
   }
 
@@ -525,7 +655,7 @@
       return;
     }
     refs.personList.innerHTML = path.sources.map((source, index) => {
-      const author = source.author?.trim() || "知乎未署名答主";
+      const author = displayAuthor(source.author);
       const title = source.title || "一条知乎回答";
       const personLabel = source.content_type === "question" ? author : `Hi，我是${author}`;
       return `<button class="journey-person-select" type="button" role="option" data-answer-source-id="${escapeHTML(source.source_id)}" aria-selected="${source.source_id === state.activeSourceId || (!state.activeSourceId && index === 0)}">
@@ -558,7 +688,7 @@
   }
 
   function renderSourceDetail(source) {
-    const author = source.author?.trim() || "知乎未署名答主";
+    const author = displayAuthor(source.author);
     const directAuthorUrl = source.author_url || source.metadata?.author_url || "";
     const authorUrl = directAuthorUrl || source.url;
     const authorLinkLabel = directAuthorUrl ? "查看答主主页 ↗" : "查看公开页面 ↗";
@@ -581,17 +711,52 @@
       <section class="journey-detail-section"><h4>${responseHeading}</h4><p class="qa-source-answer">${escapeHTML(source.summary || "知乎没有返回可展示的回答摘要。")}</p></section>
       <section class="journey-detail-section"><h4>为什么匹配到这里</h4><ul class="journey-match-reasons">${reasons.map((reason) => `<li>${escapeHTML(reason)}</li>`).join("")}</ul></section>
       <section class="journey-detail-section"><h4>这条来源</h4><div class="journey-detail-timeline"><div class="journey-detail-event"><time>知乎 · ${escapeHTML(source.content_type || "answer")}</time><p>${escapeHTML(source.title || "未命名回答")}</p></div><div class="journey-detail-event"><time>有限摘要 · 保留原链</time><p>${escapeHTML(provenanceText)}</p></div></div></section>
-      <div class="journey-detail-actions"><a class="button button-dark" href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">${sourceLinkLabel}</a><a class="button journey-outline-button" href="${escapeHTML(authorUrl)}" target="_blank" rel="noopener noreferrer">${authorLinkLabel}</a></div>`;
+      <div class="journey-detail-actions"><a class="button button-dark" href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">${sourceLinkLabel}</a><a class="button journey-outline-button" href="${escapeHTML(authorUrl)}" target="_blank" rel="noopener noreferrer">${authorLinkLabel}</a><button class="button journey-outline-button" type="button" data-ask-source>带回对话</button><button class="button journey-outline-button" type="button" data-save-source aria-pressed="false">存入我的样本库</button></div><div class="journey-person-composer" data-person-composer hidden></div>`;
+    const saveButton = refs.personDetail.querySelector("[data-save-source]");
+    const askButton = refs.personDetail.querySelector("[data-ask-source]");
+    const composer = refs.personDetail.querySelector("[data-person-composer]");
+    const saved = getSavedSources().has(source.source_id);
+    saveButton.classList.toggle("is-saved", saved);
+    saveButton.setAttribute("aria-pressed", String(saved));
+    saveButton.textContent = saved ? "已存入我的样本库 ✓" : "存入我的样本库";
+    saveButton.addEventListener("click", () => {
+      const isSaved = toggleSavedSource(source.source_id);
+      saveButton.classList.toggle("is-saved", isSaved);
+      saveButton.setAttribute("aria-pressed", String(isSaved));
+      saveButton.textContent = isSaved ? "已存入我的样本库 ✓" : "存入我的样本库";
+    });
+    askButton.addEventListener("click", () => {
+      const question = makePersonQuestion(source);
+      composer.hidden = false;
+      composer.innerHTML = `<h4>继续追问这一段经历</h4><label class="sr-only" for="source-question">写下你想确认的细节</label><textarea id="source-question" rows="4">${escapeHTML(question)}</textarea><button class="button button-dark" type="button" data-send-source-question>带回当前对话</button><p class="journey-inline-status" data-source-question-status aria-live="polite"></p>`;
+      const textarea = composer.querySelector("textarea");
+      const sendButton = composer.querySelector("[data-send-source-question]");
+      sendButton.addEventListener("click", () => {
+        const value = textarea.value.trim();
+        if (!value) return;
+        if (refs.messageInput) {
+          refs.messageInput.value = value;
+          composer.querySelector("[data-source-question-status]").textContent = "问题已带回对话输入框，可以继续发送。";
+          refs.messageInput.focus();
+          scrollToMessageForm();
+          return;
+        }
+        saveHandoff({ mode: state.flowMode || "live", sessionId: state.sessionId, problem: getProblemText(), prompt: value });
+        navigateWithTransition("qa-session.html", { session_id: state.sessionId, mode: state.flowMode || "live", resume: "1" });
+      });
+      textarea.focus();
+    });
   }
 
   async function renderMatchedPaths(answer) {
     state.matchedPaths = buildMatchedPaths(answer);
     state.activePathIndex = 0;
     state.activeSourceId = null;
-    refs.resultQuestion.textContent = refs.problemInput.value.trim().replace(/[\r\n]+/g, " ").slice(0, 42);
+    refs.resultQuestion.textContent = getProblemText().replace(/[\r\n]+/g, " ").slice(0, 42);
     refs.results.hidden = false;
     refs.results.classList.remove("is-visible");
     renderPathList();
+    renderAnswerView(answer);
     refs.peopleTitle.textContent = "这条路上的人";
     refs.peopleDescription.textContent = "正在把本次回答中的知乎来源整理成可以回看的样本。";
     refs.personList.innerHTML = `<p class="qa-results-loading">正在读取知乎来源…</p>`;
@@ -608,6 +773,7 @@
   function renderTurn(result) {
     setStatus(result.state ? `当前状态：${result.state}` : "");
     if (result.action === "ask") {
+      state.questionsAsked += 1;
       const question = result.decision?.question;
       appendAssistantWithActions(question?.text || result.decision?.reason || "你愿意再补充一点背景吗？", question?.suggestions || []);
       return;
@@ -622,9 +788,7 @@
       return;
     }
     if (result.action === "respond") {
-      appendAnswer(result.answer);
-      void renderMatchedPaths(result.answer);
-      setStatus("参照已整理完成，你可以继续补充或追问。");
+      openResultsPage(result.answer);
       return;
     }
     appendMessage("assistant", result.reason || "我还需要一点信息，才能继续。");
@@ -643,8 +807,14 @@
     state.busy = true;
     state.turn += 1;
     refs.messageForm.querySelector("button").disabled = true;
-    startSearchRitual(initial ? "understanding" : "retrieval");
-    setStatus(initial ? "正在听见你的问题…" : "正在寻找相似人生并整理参照…");
+    const directAnswerRequest = /(?:直接回答|马上回答|立即回答|不用问|跳过|先回答)/u.test(message);
+    const showRetrievalRitual = directAnswerRequest || (!initial && state.questionsAsked >= state.maxQuestions);
+    if (showRetrievalRitual) {
+      startSearchRitual("retrieval");
+      setStatus("正在寻找相似人生并整理参照…");
+    } else {
+      setStatus(initial ? "正在听见你的问题…" : "正在记录这条补充…");
+    }
     try {
       const result = await request(`/api/sessions/${encodeURIComponent(state.sessionId)}/messages`, {
         method: "POST",
@@ -678,18 +848,18 @@
     try {
       state.flowMode = shouldUseCuratedFlow(problem) ? "curated" : "live";
       if (state.flowMode === "curated") {
-        await runDemoInitial(problem);
+        saveHandoff({ mode: "curated", problem });
+        navigateWithTransition("qa-session.html", { mode: "curated" });
         return;
       }
       await ensureBackendReady();
       const session = await request("/api/sessions", { method: "POST", body: JSON.stringify({ problem_statement: "" }) });
       state.sessionId = session.session_id;
-      refs.startForm.hidden = true;
-      refs.conversation.hidden = false;
-      refs.workspace.classList.add("is-exiting");
-      window.requestAnimationFrame(() => scrollToLiveSession());
-      await sendTurn(problem, { initial: true });
-      finishStartLayout();
+      state.problemText = problem;
+      state.maxQuestions = Number(session.max_questions) || 4;
+      state.questionsAsked = 0;
+      saveHandoff({ mode: "live", sessionId: session.session_id, problem });
+      navigateWithTransition("qa-session.html", { mode: "live", session_id: session.session_id });
     } catch (error) {
       showError(error);
     } finally {
@@ -699,10 +869,16 @@
   }
 
   function resetSession() {
+    if (!refs.startForm) {
+      navigateWithTransition("qa.html");
+      return;
+    }
     stopSearchRitual();
     state.sessionId = null;
     state.busy = false;
     state.turn = 0;
+    state.questionsAsked = 0;
+    state.maxQuestions = 4;
     state.demoStep = 0;
     state.flowMode = null;
     refs.messages.replaceChildren();
@@ -730,10 +906,123 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function continueQuestion() {
+    if (!refs.messageInput) {
+      saveHandoff({ mode: state.flowMode || "live", sessionId: state.sessionId, problem: getProblemText() });
+      navigateWithTransition("qa-session.html", { session_id: state.sessionId, mode: state.flowMode || "live", resume: "1" });
+      return;
+    }
+    // 本地演示流会在整理完成后锁定输入；CTA 仍应能把用户带回可编辑的对话区。
+    if (refs.messageInput.disabled) {
+      refs.messageInput.disabled = false;
+      refs.messageForm.querySelector("button").disabled = false;
+      refs.messageInput.placeholder = "补充你的情况，或回答我们的问题。";
+      state.demoStep = 1;
+    }
+    refs.messageInput.focus();
+    scrollToMessageForm();
+  }
+
+  function renderSessionHistory(session, handoff) {
+    refs.messages.replaceChildren();
+    for (const message of session.raw_messages || []) {
+      appendMessage(message.role === "assistant" ? "assistant" : "user", message.text);
+    }
+    if (session.pending_question?.text) {
+      appendAssistantWithActions(session.pending_question.text, session.pending_question.suggestions || []);
+    }
+    if (handoff?.prompt && refs.messageInput) {
+      refs.messageInput.value = handoff.prompt;
+      refs.messageInput.focus();
+    }
+  }
+
+  async function initSessionPage() {
+    if (!refs.conversation || !refs.messageForm) return;
+    const params = new URLSearchParams(location.search);
+    const handoff = readSessionStorage(QA_HANDOFF_KEY) || {};
+    const mode = params.get("mode") || handoff.mode || "live";
+    const sessionId = params.get("session_id") || handoff.sessionId || null;
+    const resume = params.get("resume") === "1";
+    const problem = String(handoff.problem || params.get("problem") || "").trim();
+    state.flowMode = mode;
+    state.sessionId = sessionId || (mode === "curated" ? "local-demo" : null);
+    state.problemText = problem;
+    refs.conversation.hidden = false;
+    refs.conversation.classList.add("live-session-active");
+
+    if (mode === "curated") {
+      if (resume) {
+        appendMessage("user", problem || "我想继续回看刚才的问题。");
+        appendAssistantWithActions("你可以继续补充刚才没有说完的处境，或者直接写下一个想确认的细节。", []);
+        state.demoStep = 1;
+        if (handoff.prompt) refs.messageInput.value = handoff.prompt;
+        refs.messageInput.focus();
+      } else if (problem) {
+        await runDemoInitial(problem);
+      } else {
+        showError(Object.assign(new Error("missing question"), { code: "INVALID_REQUEST" }));
+      }
+      return;
+    }
+
+    if (!sessionId || !problem) {
+      showError(Object.assign(new Error("missing session handoff"), { code: "INVALID_REQUEST" }));
+      return;
+    }
+    try {
+      await ensureBackendReady();
+      const session = await request(`/api/sessions/${encodeURIComponent(sessionId)}`);
+      state.maxQuestions = Number(session.max_questions) || 4;
+      state.questionsAsked = Number(session.question_count) || 0;
+      state.problemText = session.current_understanding?.problem_statement || problem;
+      if (resume || session.raw_messages?.length) {
+        renderSessionHistory(session, handoff);
+        setStatus(session.status ? `当前状态：${session.status}` : "");
+      } else {
+        await sendTurn(state.problemText, { initial: true });
+      }
+      scrollToLiveSession();
+    } catch (error) {
+      showError(error);
+      setStatus("本轮没有完成，可以修改内容后再次发送。");
+    }
+  }
+
+  async function initResultsPage() {
+    if (!refs.results) return;
+    const params = new URLSearchParams(location.search);
+    const stored = readSessionStorage(QA_RESULT_KEY) || {};
+    const sessionId = params.get("session_id") || stored.sessionId || null;
+    const storedMatchesSession = !sessionId || !stored.sessionId || String(stored.sessionId) === String(sessionId);
+    const storedResult = storedMatchesSession ? stored : {};
+    state.sessionId = sessionId;
+    state.flowMode = params.get("mode") || storedResult.mode || "live";
+    state.problemText = storedResult.problem || "";
+    let answer = storedResult.answer || null;
+    if (!answer && sessionId && sessionId !== "local-demo") {
+      try {
+        await ensureBackendReady();
+        const session = await request(`/api/sessions/${encodeURIComponent(sessionId)}`);
+        answer = session.current_answer;
+        state.problemText = session.current_understanding?.problem_statement || state.problemText;
+      } catch (error) {
+        showError(error);
+      }
+    }
+    if (!answer) {
+      navigateWithTransition("qa.html");
+      return;
+    }
+    await renderMatchedPaths(answer);
+  }
+
   function initNavigation() {
     const header = $("#site-header");
+    if (!header) return;
     const menuButton = header.querySelector(".menu-toggle");
     const menu = header.querySelector(".nav-links");
+    if (!menuButton || !menu) return;
     const close = () => { menu.classList.remove("open"); menuButton.classList.remove("open"); menuButton.setAttribute("aria-expanded", "false"); document.body.style.overflow = ""; };
     menuButton.addEventListener("click", () => { const open = !menu.classList.contains("open"); menu.classList.toggle("open", open); menuButton.classList.toggle("open", open); menuButton.setAttribute("aria-expanded", String(open)); document.body.style.overflow = open ? "hidden" : ""; });
     menu.addEventListener("click", (event) => { if (event.target.matches("a")) close(); });
@@ -748,9 +1037,12 @@
     }));
   }
 
-  refs.startForm.addEventListener("submit", startSession);
-  refs.messageForm.addEventListener("submit", (event) => { event.preventDefault(); void sendTurn(refs.messageInput.value); });
-  refs.reset.addEventListener("click", resetSession);
+  refs.startForm?.addEventListener("submit", startSession);
+  refs.messageForm?.addEventListener("submit", (event) => { event.preventDefault(); void sendTurn(refs.messageInput.value); });
+  refs.reset?.addEventListener("click", resetSession);
+  refs.continueQuestion?.addEventListener("click", continueQuestion);
   initNavigation();
   initTopLinks();
+  if (pageKind === "session") void initSessionPage();
+  if (pageKind === "results") void initResultsPage();
 })();
