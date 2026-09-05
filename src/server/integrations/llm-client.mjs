@@ -77,6 +77,7 @@ export class LlmClient {
         } catch (error) {
           throw appError("LLM_INVALID_RESPONSE", { cause: error });
         }
+        if (payload?.choices?.[0]?.finish_reason === "length") throw appError("LLM_OUTPUT_TRUNCATED");
         const content = payload?.choices?.[0]?.message?.content;
         return parseJsonContent(content);
       } catch (error) {

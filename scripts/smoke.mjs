@@ -1,10 +1,13 @@
+import path from "node:path";
 import process from "node:process";
 
+import { loadEnvFile } from "../src/server/config/env.mjs";
 import { loadRuntimeConfig } from "../src/server/config/runtime-config.mjs";
 import { LlmClient } from "../src/server/integrations/llm-client.mjs";
 import { ZhihuSearchClient } from "../src/server/integrations/zhihu-search-client.mjs";
 
 const live = process.argv.includes("--live");
+await loadEnvFile(path.resolve(process.cwd(), ".env.local"), { required: false });
 const config = loadRuntimeConfig(process.env);
 
 if (!live) {

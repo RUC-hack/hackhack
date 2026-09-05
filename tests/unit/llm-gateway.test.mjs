@@ -38,6 +38,14 @@ test("invalid model JSON is repaired at most once and then validated", async () 
   assert.equal(calls, 2);
 });
 
+test("gateway normalizes a string question returned by the model", async () => {
+  const gateway = new LlmGateway({
+    client: { async chatJson() { return { action: "ask", reason: "还需要一点背景", question: "你最在意什么？", queries: [], assumptions: [] }; } },
+  });
+  const value = await gateway.decideNextAction({ raw_messages: [] });
+  assert.deepEqual(value.question, { text: "你最在意什么？", suggestions: [] });
+});
+
 test("invalid model JSON does not execute repair when repair is disabled", async () => {
   let calls = 0;
   const gateway = new LlmGateway({ client: { async chatJson() { calls += 1; return { action: "not-allowed", reason: "bad" }; } }, repair: false });
@@ -48,6 +56,11 @@ test("invalid model JSON does not execute repair when repair is disabled", async
 test("LLM client classifies malformed JSON as invalid response", async () => {
   const client = new LlmClient({ apiKey: "test", maxRetries: 2, sleep: async () => {}, fetchImpl: async () => new Response("not-json", { status: 200 }) });
   await assert.rejects(client.chatJson({ system: "x", user: "y" }), (error) => error.code === "LLM_INVALID_RESPONSE");
+});
+
+test("LLM client classifies length-truncated output separately", async () => {
+  const client = new LlmClient({ apiKey: "test", maxRetries: 0, fetchImpl: async () => response({ choices: [{ finish_reason: "length", message: { content: "" } }] }) });
+  await assert.rejects(client.chatJson({ system: "x", user: "y" }), (error) => error.code === "LLM_OUTPUT_TRUNCATED");
 });
 
 test("gateway redacts secret-like user content before putting it in a model prompt", async () => {

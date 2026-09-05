@@ -11,6 +11,7 @@
   <meta property="og:description" content="像我这样的人，可以怎样活？在相似人生中，看见自己的坐标。">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1600&q=82&auto=format&fit=crop">
+  <link rel="preload" as="image" href="assets/images/hero.jpg" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
@@ -20,7 +21,7 @@
   <a class="skip-link" href="#main">跳至正文</a>
   <header class="site-header" id="site-header">
     <nav class="nav-shell" aria-label="主要导航">
-      <a class="brand" href="#top" aria-label="见众首页">
+      <a class="brand" href="#top" onclick="window.scrollTo(0, 0); return false;" aria-label="见众首页">
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
         <span>见众</span>
       </a>
@@ -33,6 +34,7 @@
         <a href="#trajectories">相似人生</a>
         <a href="#rehearsal">人生预演</a>
         <a href="#map">长期地图</a>
+        <a href="qa.html">问答测试</a>
       </div>
     </nav>
   </header>
@@ -40,7 +42,7 @@
   <main id="main">
     <div class="hero-wrapper">
       <section class="hero" id="top" aria-labelledby="hero-title">
-        <div class="hero-bg" data-image-target="hero" aria-hidden="true"></div>
+        <div class="hero-bg" data-image-target="hero" style="background-image:url('assets/images/hero.jpg')" aria-hidden="true"></div>
         <div class="hero-noise"></div>
         <div class="hero-content">
           <p class="eyebrow hero-eyebrow fade-up">JIANZHONG · LIFE REFERENCE SYSTEM</p>
@@ -48,6 +50,7 @@
           <p class="hero-lead fade-up delay-2">把孤立的“我怎么了”，变成<br>“原来我们这样的人，会这样”。</p>
           <div class="hero-actions fade-up delay-3">
             <a class="button button-light" href="#question">进入策展叙事 <span aria-hidden="true">↓</span></a>
+            <a class="button button-outline-light" href="qa.html">寻找相似人生 <span aria-hidden="true">↗</span></a>
             <a class="text-link light" href="#framework">认识见众 <span aria-hidden="true">↗</span></a>
           </div>
         </div>
@@ -92,7 +95,7 @@
       </div>
     </section>
 
-    <section class="image-break" data-image-target="crowd" aria-label="群体人生参照">
+    <section class="image-break" data-image-target="crowd" style="background-image:url('assets/images/crowd.jpg')" aria-label="群体人生参照">
       <div class="image-break-panel fade-up">
         <p class="eyebrow">COLLECTIVE REFERENCE</p>
         <blockquote>人生不是只有“建议”，<br>人生还可以有“样本”。</blockquote>
@@ -109,7 +112,7 @@
         </header>
         <div class="trajectory-layout">
           <figure class="editorial-figure fade-up">
-            <img src="https://images.unsplash.com/photo-1788119117647-c5d2a76593dd?auto=format&amp;fit=crop&amp;w=900&amp;q=82" data-image-target="portrait" alt="一辆 SUV 行驶在美国犹他州红岩荒漠的蜿蜒公路上" width="900" height="506" loading="lazy">
+            <img src="assets/images/portrait.jpg" data-image-target="portrait" alt="一辆 SUV 行驶在美国犹他州红岩荒漠的蜿蜒公路上" width="900" height="506" loading="lazy">
             <figcaption><span>每一条路，都有自己的生活质感</span><span data-credit-for="portrait"></span></figcaption>
           </figure>
           <div class="trajectory-list" id="trajectory-list"></div>
@@ -133,7 +136,7 @@
       </div>
     </section>
 
-    <section class="timepiece" aria-label="人生没有统一时间表" data-image-target="road">
+    <section class="timepiece" aria-label="人生没有统一时间表" data-image-target="road" style="background-image:url('assets/images/road.jpg')">
       <div class="timepiece-overlay"></div>
       <div class="timepiece-content fade-up">
         <p class="eyebrow">A DIFFERENT SCALE OF TIME</p>
@@ -157,12 +160,12 @@
       </div>
     </section>
 
-    <section class="closing section" data-image-target="closing" aria-label="我们这样的人，一同走过">
+    <section class="closing section" data-image-target="closing" style="background-image:url('assets/images/closing.jpg')" aria-label="我们这样的人，一同走过">
       <div class="container narrow fade-up">
         <p class="eyebrow">06 · TOGETHER</p>
         <h2>有人和你一样慢，<br>一样怕，一样犹豫。</h2>
         <p>也有人已经从这里走过去了。</p>
-        <a class="button button-dark" href="#top">重新观看 <span aria-hidden="true">↑</span></a>
+        <a class="button button-dark" href="#top" onclick="window.scrollTo(0, 0); return false;">重新观看 <span aria-hidden="true">↑</span></a>
       </div>
       <p class="photo-credit" data-credit-for="closing"></p>
     </section>
@@ -170,14 +173,15 @@
 
   <footer class="footer">
     <div class="container footer-grid">
-      <div><a class="brand footer-brand" href="#top"><span class="brand-mark"><i></i><i></i><i></i></span><span>见众</span></a><p>基于相似人生轨迹的 AI 自我认识与人生参照系统。</p></div>
+      <div><a class="brand footer-brand" href="#top" onclick="window.scrollTo(0, 0); return false;"><span class="brand-mark"><i></i><i></i><i></i></span><span>见众</span></a><p>基于相似人生轨迹的 AI 自我认识与人生参照系统。</p></div>
       <nav aria-label="页脚导航"><a href="#question">为什么</a><a href="#framework">四个空间</a><a href="#trajectories">相似人生</a><a href="#rehearsal">人生预演</a></nav>
       <div class="credits"><p>影像来源</p><div id="all-credits">Unsplash 摄影作品</div></div>
     </div>
-    <div class="container footer-bottom"><span>© 2026 见众 · 概念演示</span><a href="#top">返回顶部 ↑</a></div>
+    <div class="container footer-bottom"><span>© 2026 见众 · 概念演示</span><a href="#top" onclick="window.scrollTo(0, 0); return false;">返回顶部 ↑</a></div>
   </footer>
 
-  <script>window.APP_CONFIG = { unsplashAccessKey: "" };</script>
+  <script src="app-config.js"></script>
+  <script>window.APP_CONFIG = { ...(window.APP_CONFIG || {}), unsplashAccessKey: "" };</script>
   <script src="app.js"></script>
 </body>
 </html>

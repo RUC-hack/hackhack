@@ -4,7 +4,15 @@
 
 ## 运行
 
-直接双击 `index.html` 即可演示。为避免浏览器对本地资源的限制，也可以在本目录运行：
+推荐在项目根目录使用 Node.js 启动前后端：
+
+```powershell
+npm start
+```
+
+启动后访问 `http://localhost:8080`，问答测试页为 `http://localhost:8080/qa.html`，后端健康检查为 `http://localhost:3000/api/health`。也可以分别运行 `npm run start:backend` 和 `npm run start:frontend`。
+
+如果只看静态策展页，直接双击 `index.html` 也可以演示；为避免浏览器对本地资源的限制，也可以在本目录运行：
 
 ```powershell
 python -m http.server 8080
@@ -16,11 +24,13 @@ python -m http.server 8080
 
 - `index.html`：语义化页面结构与 SEO 信息
 - `styles.css`：视觉系统、响应式布局、动效与无障碍适配
-- `app.js`：数据渲染、导航、移动菜单、视口动画、图片检索和缓存
+- `app.js`：数据渲染、导航、移动菜单、视口动画、本地图片优先和网络回退
+- `qa.html` / `qa.js` / `qa.css`：问答测试页及后端 API 调用
+- `assets/images/`：本地策展图片；文件缺失或加载失败时自动回退到远程图片
 
 ## Unsplash 图片
 
-项目开箱即用：未配置 API Key 时会加载已策展的 Unsplash CDN 回退图片。若希望启用运行时自动检索，请在 `index.html` 底部填写公开的 **Unsplash Access Key**：
+项目默认优先加载 `assets/images/` 中的本地策展图片；本地文件不存在或加载失败时，会自动回退到对应的 Unsplash CDN 图片。若后续为没有本地图片的素材启用运行时自动检索，可以在 `index.html` 底部填写公开的 **Unsplash Access Key**：
 
 ```js
 window.APP_CONFIG = { unsplashAccessKey: "YOUR_ACCESS_KEY" };

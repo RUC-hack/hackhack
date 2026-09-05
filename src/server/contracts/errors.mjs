@@ -8,6 +8,7 @@ const ERROR_DEFAULTS = Object.freeze({
   METHOD_NOT_ALLOWED: { status: 405, retryable: false, message: "Method is not allowed" },
   LLM_NOT_CONFIGURED: { status: 503, retryable: true, message: "Language model is not configured" },
   LLM_INVALID_RESPONSE: { status: 502, retryable: false, message: "Language model returned an invalid response" },
+  LLM_OUTPUT_TRUNCATED: { status: 502, retryable: false, message: "Language model output was truncated" },
   LLM_TIMEOUT: { status: 504, retryable: true, message: "Language model request timed out" },
   LLM_NETWORK_ERROR: { status: 502, retryable: true, message: "Language model request failed" },
   LLM_CANCELLED: { status: 499, retryable: false, message: "Request was cancelled" },

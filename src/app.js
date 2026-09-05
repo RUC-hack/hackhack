@@ -27,12 +27,13 @@
     { year: "2031", text: "原来我已经走过来了。", note: "回望不是为了证明当初选对，而是看见自己如何成为现在的人。", resolved: false }
   ];
 
-  // 无 API Key 时使用经语义筛选的静态 Unsplash CDN 图；有 Key 时使用官方 Search API。
+  // 本地策展图优先；本地文件缺失或加载失败时，再回退到远程 Unsplash 图。
   const imageRequirements = [
-    { target: "hero", query: "young person alone landscape contemplative editorial", orientation: "landscape", concept: ["person", "nature", "landscape"], fallback: { id: "hero-landscape", url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee", photographer: "Unsplash", profile: "https://unsplash.com", page: "https://unsplash.com", position: "center" } },
-    { target: "crowd", query: "people walking city crowd documentary neutral", orientation: "landscape", concept: ["people", "city", "crowd"], fallback: { id: "crowd-city", url: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac", photographer: "Unsplash", profile: "https://unsplash.com", page: "https://unsplash.com", position: "center" } },
+    { target: "hero", localUrl: "assets/images/hero.jpg", query: "young person alone landscape contemplative editorial", orientation: "landscape", concept: ["person", "nature", "landscape"], fallback: { id: "hero-landscape", url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee", photographer: "Unsplash", profile: "https://unsplash.com", page: "https://unsplash.com", position: "center" } },
+    { target: "crowd", localUrl: "assets/images/crowd.jpg", query: "people walking city crowd documentary neutral", orientation: "landscape", concept: ["people", "city", "crowd"], fallback: { id: "crowd-city", url: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac", photographer: "Unsplash", profile: "https://unsplash.com", page: "https://unsplash.com", position: "center" } },
    {
   target: "portrait",
+  localUrl: "assets/images/portrait.jpg",
   query: "SUV winding desert road Utah red rock editorial",
   orientation: "portrait",
   concept: [
@@ -52,8 +53,8 @@
     position: "center"
   }
 },
-    { target: "road", query: "winding road fog landscape journey minimal", orientation: "landscape", concept: ["road", "fog", "landscape"], fallback: { id: "road-fog", url: "https://images.unsplash.com/photo-1500534623283-312aade485b7", photographer: "Unsplash", profile: "https://unsplash.com", page: "https://unsplash.com", position: "center" } },
-    { target: "closing", query: "friends walking together landscape sunset cinematic", orientation: "landscape", concept: ["friends", "people", "together", "walking", "sunset"], fallback: { id: "together-sunset", url: "https://images.unsplash.com/photo-1527631746610-bca00a040d60", photographer: "Unsplash", profile: "https://unsplash.com", page: "https://unsplash.com/s/photos/friends-walking-together", position: "center" } }
+    { target: "road", localUrl: "assets/images/road.jpg", query: "winding road fog landscape journey minimal", orientation: "landscape", concept: ["road", "fog", "landscape"], fallback: { id: "road-fog", url: "https://images.unsplash.com/photo-1500534623283-312aade485b7", photographer: "Unsplash", profile: "https://unsplash.com", page: "https://unsplash.com", position: "center" } },
+    { target: "closing", localUrl: "assets/images/closing.jpg", query: "friends walking together landscape sunset cinematic", orientation: "landscape", concept: ["friends", "people", "together", "walking", "sunset"], fallback: { id: "together-sunset", url: "https://images.unsplash.com/photo-1527631746610-bca00a040d60", photographer: "Unsplash", profile: "https://unsplash.com", page: "https://unsplash.com/s/photos/friends-walking-together", position: "center" } }
   ];
 
   function renderContent() {
@@ -80,10 +81,16 @@
     const links = [...document.querySelectorAll(".nav-links a")];
     const updateHeader = () => header.classList.toggle("scrolled", window.scrollY > 48);
     updateHeader(); window.addEventListener("scroll", updateHeader, { passive: true });
+    if (typeof window.IntersectionObserver !== "function") return;
     const sectionObserver = new IntersectionObserver(entries => entries.forEach(entry => {
       if (entry.isIntersecting) links.forEach(link => link.classList.toggle("active", link.hash === `#${entry.target.id}`));
     }), { rootMargin: "-35% 0px -58%", threshold: 0 });
-    links.forEach(link => { const section = document.querySelector(link.hash); if (section) sectionObserver.observe(section); });
+    links.forEach(link => {
+      // 普通页面入口（如 qa.html）没有 hash，不参与当前页的章节高亮。
+      if (!link.hash) return;
+      const section = document.querySelector(link.hash);
+      if (section) sectionObserver.observe(section);
+    });
   }
 
   function initMobileMenu() {
@@ -95,13 +102,50 @@
   }
 
   function initScrollAnimations() {
+    document.documentElement.classList.add("motion-ready");
+    const revealVisible = () => document.querySelectorAll(".fade-up:not(.visible)").forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * .96 && rect.bottom > 0) el.classList.add("visible");
+    });
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { document.querySelectorAll(".fade-up").forEach(el => el.classList.add("visible")); return; }
+    if (typeof window.IntersectionObserver !== "function") {
+      revealVisible();
+      window.addEventListener("scroll", revealVisible, { passive: true });
+      return;
+    }
     const observer = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add("visible"); observer.unobserve(entry.target); } }), { threshold: .14 });
     document.querySelectorAll(".fade-up").forEach(el => observer.observe(el));
+    requestAnimationFrame(revealVisible);
+    window.addEventListener("scroll", revealVisible, { passive: true });
   }
 
   function initSmoothScroll() {
-    document.querySelectorAll('a[href^="#"]').forEach(link => link.addEventListener("click", event => { const target = document.querySelector(link.hash); if (!target) return; event.preventDefault(); target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }));
+    document.querySelectorAll('a[href^="#"]').forEach(link => link.addEventListener("click", event => {
+      const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      if (link.hash === "#top") {
+        event.preventDefault();
+        scrollPageTop();
+        return;
+      }
+      const target = document.querySelector(link.hash);
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior });
+    }));
+  }
+
+  function scrollPageTop() {
+    const root = document.documentElement;
+    const body = document.body;
+    const rootBehavior = root.style.scrollBehavior;
+    const bodyBehavior = body.style.scrollBehavior;
+    root.style.scrollBehavior = "auto";
+    body.style.scrollBehavior = "auto";
+    root.scrollTop = 0;
+    body.scrollTop = 0;
+    window.scrollTo(0, 0);
+    root.style.scrollBehavior = rootBehavior;
+    body.style.scrollBehavior = bodyBehavior;
   }
 
   function buildUnsplashQuery(requirement) { return `${requirement.query} editorial muted colors`; }
@@ -119,7 +163,13 @@
   }
   function normalizePhoto(photo) { return { id: photo.id, url: photo.urls.regular, photographer: photo.user.name, profile: photo.user.links.html, page: photo.links.html, downloadLocation: photo.links.download_location, position: "center" }; }
   async function trackUnsplashDownload(photo, key) { if (!key || !photo.downloadLocation) return; try { await fetch(photo.downloadLocation, { headers: { Authorization: `Client-ID ${key}` } }); } catch (_) { /* 追踪失败不阻断展示 */ } }
-  function sizedUrl(url, target) { const join = url.includes("?") ? "&" : "?"; return `${url}${join}w=${target === "hero" ? 2000 : target === "portrait" ? 900 : 1600}&q=82&auto=format&fit=crop`; }
+  function sizedUrl(url, target) {
+    if (!/^https?:/u.test(url)) {
+      try { return new URL(url, document.baseURI).href; } catch (_) { return url; }
+    }
+    const join = url.includes("?") ? "&" : "?";
+    return `${url}${join}w=${target === "hero" ? 2000 : target === "portrait" ? 900 : 1600}&q=82&auto=format&fit=crop`;
+  }
   function renderAttribution(target, photo) {
     const source = document.querySelector(`[data-credit-for="${target}"]`); if (!source) return;
     const utm = "?utm_source=jianzhong_demo&utm_medium=referral";
@@ -127,18 +177,57 @@
   }
   function applyImage(requirement, photo) {
     const el = document.querySelector(`[data-image-target="${requirement.target}"]`); if (!el) return;
-    const url = sizedUrl(photo.url, requirement.target);
-    if (el.tagName === "IMG") { el.src = url; el.onerror = () => { el.removeAttribute("src"); el.classList.add("image-fallback"); }; }
-    else { const probe = new Image(); probe.onload = () => { el.style.backgroundImage = `url("${url}")`; }; probe.onerror = () => el.classList.add("image-fallback"); probe.src = url; }
+    const primaryUrl = sizedUrl(photo.localUrl || photo.url, requirement.target);
+    const remoteUrl = photo.localUrl && photo.url ? sizedUrl(photo.url, requirement.target) : null;
+    const markFallback = () => {
+      // 清掉 HTML 中的本地占位 URL，让 CSS 纯色兜底可以正常接管。
+      el.style.removeProperty("background-image");
+      el.classList.add("image-fallback");
+    };
+    if (el.tagName === "IMG") {
+      let triedRemote = false;
+      el.onerror = () => {
+        if (!triedRemote && remoteUrl) {
+          triedRemote = true;
+          el.src = remoteUrl;
+          return;
+        }
+        el.removeAttribute("src");
+        markFallback();
+      };
+      el.src = primaryUrl;
+    } else {
+      const loadBackground = (url, allowRemoteFallback = true) => {
+        const probe = new Image();
+        probe.onload = () => { el.style.backgroundImage = `url("${url}")`; };
+        probe.onerror = () => {
+          if (allowRemoteFallback && remoteUrl) loadBackground(remoteUrl, false);
+          else markFallback();
+        };
+        probe.src = url;
+      };
+      loadBackground(primaryUrl);
+    }
     renderAttribution(requirement.target, photo);
+  }
+  function scheduleImage(requirement, photo) {
+    const element = document.querySelector(`[data-image-target="${requirement.target}"]`);
+    if (!element) return;
+
+    // 本地策展图体积可控，直接交给浏览器并行加载，避免背景图因观察器未触发
+    // 一直停留在纯色兜底层。applyImage 仍会在本地资源失败时切换到远程图。
+    applyImage(requirement, photo);
   }
   async function initUnsplashImages(force = false) {
     const key = window.APP_CONFIG?.unsplashAccessKey?.trim(); const cacheKey = "jianzhongImageCacheV4"; const used = new Set(); let cache = {};
     if (!force) { try { cache = JSON.parse(localStorage.getItem(cacheKey) || "{}"); } catch (_) { cache = {}; } }
     for (const requirement of imageRequirements) {
       let photo = cache[requirement.target];
-      if (!photo && key) { try { const results = await searchUnsplashPhotos(requirement, key); photo = normalizePhoto(results.sort((a,b) => scorePhotoCandidate(b, requirement, used) - scorePhotoCandidate(a, requirement, used))[0]); await trackUnsplashDownload(photo, key); } catch (error) { console.warn("Unsplash 检索失败，使用策展回退图。", error); } }
-      photo ||= requirement.fallback; used.add(photo.id); cache[requirement.target] = photo; applyImage(requirement, photo);
+      if (!photo && key && !requirement.localUrl) { try { const results = await searchUnsplashPhotos(requirement, key); if (results.length) { photo = normalizePhoto(results.sort((a,b) => scorePhotoCandidate(b, requirement, used) - scorePhotoCandidate(a, requirement, used))[0]); await trackUnsplashDownload(photo, key); } } catch (error) { console.warn("Unsplash 检索失败，使用策展回退图。", error); } }
+      photo ||= requirement.fallback;
+      used.add(photo.id);
+      cache[requirement.target] = photo;
+      scheduleImage(requirement, requirement.localUrl ? { ...photo, localUrl: requirement.localUrl } : photo);
     }
     try { localStorage.setItem(cacheKey, JSON.stringify(cache)); } catch (_) { /* 隐私模式下忽略 */ }
     const credits = [...new Map(Object.values(cache).map(p => [p.photographer, p])).values()];
@@ -148,7 +237,8 @@
 
   function initRehearsal() { document.querySelector(".rehearsal-tabs").addEventListener("click", event => { const button = event.target.closest("button[data-path]"); if (!button) return; document.querySelectorAll(".rehearsal-tabs button").forEach(item => item.setAttribute("aria-selected", String(item === button))); renderRehearsal(button.dataset.path); }); }
   function initConstellation() {
-    const canvas = document.querySelector("#constellation-canvas"); const ctx = canvas.getContext("2d"); let points = [];
+    const canvas = document.querySelector("#constellation-canvas"); if (!canvas || typeof canvas.getContext !== "function") return;
+    const ctx = canvas.getContext("2d"); if (!ctx) return; let points = [];
     const resize = () => { const dpr = Math.min(devicePixelRatio, 2); canvas.width = canvas.clientWidth * dpr; canvas.height = canvas.clientHeight * dpr; ctx.setTransform(dpr,0,0,dpr,0,0); const count = Math.min(90, Math.floor(canvas.clientWidth / 13)); points = Array.from({length:count},(_,i) => ({x:Math.random()*canvas.clientWidth,y:Math.random()*canvas.clientHeight,r:i%17===0?3:1.3,a:.2+Math.random()*.55})); draw(); };
     const draw = () => { ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight); points.forEach((p,i) => { points.slice(i+1).forEach(q => { const d=Math.hypot(p.x-q.x,p.y-q.y); if(d<105){ctx.strokeStyle=`rgba(209,194,164,${(1-d/105)*.14})`;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}});ctx.fillStyle=`rgba(225,211,183,${p.a})`;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();}); };
     resize(); window.addEventListener("resize", resize);
@@ -183,5 +273,5 @@
 
   function initReducedMotion() { document.documentElement.dataset.motion = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "reduced" : "full"; }
 
-  document.addEventListener("DOMContentLoaded", async () => { renderContent(); initReducedMotion(); initNavigation(); initMobileMenu(); initRehearsal(); initScrollAnimations(); initSmoothScroll(); initConstellation(); initHeroScrollTransition(); await initUnsplashImages(); });
+  document.addEventListener("DOMContentLoaded", () => { renderContent(); initReducedMotion(); initNavigation(); initMobileMenu(); initRehearsal(); initScrollAnimations(); initSmoothScroll(); initConstellation(); initHeroScrollTransition(); void initUnsplashImages(); });
 })();

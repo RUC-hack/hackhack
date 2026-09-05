@@ -115,7 +115,9 @@
 
 ## 运行状态
 
-后端 MVP 已完成：提供五个 REST API、单会话状态机、Mock/Local/Zhihu 三类 Provider、知乎失败降级、可追溯来源与证据、JSONL 持久化、脱敏日志和离线自动化测试。默认开发配置不访问外部服务；真实知乎与大模型连通性测试必须显式运行 `npm run test:smoke:live`。
+后端 MVP 已完成：提供五个 REST API、单会话状态机、Mock/Local/Zhihu 三类 Provider、知乎失败降级、可追溯来源与证据、JSONL 持久化、脱敏日志和离线自动化测试。前端包含主策展页和问答测试页，`npm start` 会同时启动后端（默认 3000）与静态前端（默认 8080）。默认开发配置不访问外部服务；真实知乎与大模型连通性测试必须显式运行 `npm run test:smoke:live`。
+
+前端访问地址：`http://localhost:8080`；问答测试页：`http://localhost:8080/qa.html`；后端健康检查：`http://localhost:3000/api/health`。也可以用 `npm run start:backend` 或 `npm run start:frontend` 单独启动其中一项。
 
 ## 重要边界
 

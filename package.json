@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node src/server/main.mjs",
+    "start": "node scripts/start-all.mjs",
+    "start:backend": "node src/server/main.mjs",
+    "start:frontend": "node scripts/frontend-server.mjs",
+    "dev": "node scripts/start-all.mjs",
     "test": "node --test --test-isolation=none \"tests/**/*.test.mjs\"",
     "test:unit": "node --test --test-isolation=none \"tests/unit/*.test.mjs\"",
     "test:contract": "node --test --test-isolation=none \"tests/contract/*.test.mjs\"",
