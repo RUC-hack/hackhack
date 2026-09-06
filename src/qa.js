@@ -2,22 +2,9 @@
   "use strict";
 
   const apiBaseUrl = (window.APP_CONFIG?.apiBaseUrl || "http://127.0.0.1:3000").replace(/\/$/u, "");
-  const routeOverride = new URLSearchParams(window.location.search).get("mode");
   const pageKind = document.body?.dataset.qaPage || (location.pathname.endsWith("qa-results.html") ? "results" : location.pathname.endsWith("qa-session.html") ? "session" : "start");
   const QA_HANDOFF_KEY = "jianzhong.qa.handoff";
   const QA_RESULT_KEY = "jianzhong.qa.result";
-  const CURATED_TOPIC_PATTERN = /(?:毕业|就业|校招|应届|求职|找工作|工作机会|先工作|读博|博士|大厂|回家乡|返乡)/iu;
-  const STUDY_WORK_PATTERN = /(?:(?:考研|读研).{0,12}(?:工作|就业)|(?:工作|就业).{0,12}(?:考研|读研))/iu;
-  const curatedData = window.JIANZHONG_CURATED_DATA || { sources: {}, answer: null };
-
-  function shouldUseCuratedFlow(value) {
-    if (routeOverride === "live") return false;
-    if (routeOverride === "curated") return true;
-    const problem = String(value || "").replace(/\s+/gu, " ").trim();
-    return CURATED_TOPIC_PATTERN.test(problem) || STUDY_WORK_PATTERN.test(problem);
-  }
-  const DEMO_SOURCES = curatedData.sources || {};
-  const DEMO_ANSWER = curatedData.answer || null;
   const state = {
     sessionId: null,
     busy: false,
@@ -29,8 +16,7 @@
     matchedPaths: [],
     activePathIndex: 0,
     activeSourceId: null,
-    demoStep: 0,
-    flowMode: null,
+    flowMode: "live",
     problemText: "",
   };
   const SAVED_SOURCES_KEY = "jianzhong.savedPeople";
@@ -384,54 +370,6 @@
     return new Promise((resolve) => window.setTimeout(resolve, reducedMotion ? 420 : 3400));
   }
 
-  function setDemoBusy(busy) {
-    state.busy = busy;
-    document.body.classList.toggle("is-demo-busy", busy);
-    if (refs.messageInput) refs.messageInput.disabled = busy;
-    if (refs.messageForm) refs.messageForm.querySelector("button").disabled = busy;
-  }
-
-  async function runDemoInitial(problem) {
-    state.sessionId = "local-demo";
-    state.demoStep = 0;
-    state.problemText = problem;
-    if (refs.startForm) refs.startForm.hidden = true;
-    if (refs.conversation) refs.conversation.hidden = false;
-    if (refs.workspace) refs.workspace.classList.add("is-exiting");
-    finishStartLayout();
-    appendMessage("user", problem);
-    setDemoBusy(true);
-    setStatus("正在听见你的问题…");
-    appendAssistantWithActions(
-      "如果只能先确认一件事：你此刻更想看清哪一种代价？这会改变我们优先回看的经历。",
-      ["更担心错过工作机会", "更担心放弃研究兴趣", "更在意离家与生活成本"],
-    );
-    state.demoStep = 1;
-    setStatus("任选一项，或直接输入一句话。");
-    setDemoBusy(false);
-    refs.messageInput?.focus();
-  }
-
-  async function runDemoTurn(message) {
-    if (!message || state.busy || state.demoStep !== 1) return;
-    clearError();
-    appendMessage("user", message);
-    refs.messageInput.value = "";
-    setDemoBusy(true);
-    startSearchRitual("retrieval");
-    setStatus("正在整理与你的问题有关的人生路径…");
-    await waitForRitual();
-    stopSearchRitual();
-    openResultsPage(DEMO_ANSWER);
-    state.demoStep = 2;
-    setDemoBusy(false);
-    if (refs.messageInput) {
-      refs.messageInput.disabled = true;
-      refs.messageInput.placeholder = "这次参照已整理完成，可点击“重新开始”再次梳理。";
-    }
-    refs.messageForm?.querySelector("button")?.setAttribute("disabled", "true");
-  }
-
   function renderAnswerView(answer) {
     if (!refs.answerView) return;
     refs.answerSummary.textContent = answer?.summary || "我整理了一组可以回看的经验参照。";
@@ -529,7 +467,6 @@
 
   function getSource(sourceId) {
     if (!sourceId) return Promise.resolve(null);
-    if (DEMO_SOURCES[sourceId]) return Promise.resolve(DEMO_SOURCES[sourceId]);
     if (!state.sourceCache.has(sourceId)) {
       const pending = request(`/api/sources/${encodeURIComponent(sourceId)}`).catch(() => null);
       state.sourceCache.set(sourceId, pending);
@@ -761,10 +698,6 @@
   async function sendTurn(text, { initial = false } = {}) {
     const message = String(text || "").trim();
     if (!message || !state.sessionId || state.busy) return;
-    if (state.flowMode === "curated") {
-      await runDemoTurn(message);
-      return;
-    }
     clearError();
     appendMessage("user", message);
     refs.messageInput.value = "";
@@ -810,12 +743,7 @@
     button.disabled = true;
     button.querySelector("span").textContent = "正在进入…";
     try {
-      state.flowMode = shouldUseCuratedFlow(problem) ? "curated" : "live";
-      if (state.flowMode === "curated") {
-        saveHandoff({ mode: "curated", problem });
-        navigateWithTransition("qa-session.html", { mode: "curated" });
-        return;
-      }
+      state.flowMode = "live";
       await ensureBackendReady();
       const session = await request("/api/sessions", { method: "POST", body: JSON.stringify({ problem_statement: "" }) });
       state.sessionId = session.session_id;
@@ -843,8 +771,7 @@
     state.turn = 0;
     state.questionsAsked = 0;
     state.maxQuestions = 4;
-    state.demoStep = 0;
-    state.flowMode = null;
+    state.flowMode = "live";
     refs.messages.replaceChildren();
     refs.messageInput.value = "";
     refs.messageInput.disabled = false;
@@ -876,13 +803,6 @@
       navigateWithTransition("qa-session.html", { session_id: state.sessionId, mode: state.flowMode || "live", resume: "1" });
       return;
     }
-    // 本地演示流会在整理完成后锁定输入；CTA 仍应能把用户带回可编辑的对话区。
-    if (refs.messageInput.disabled) {
-      refs.messageInput.disabled = false;
-      refs.messageForm.querySelector("button").disabled = false;
-      refs.messageInput.placeholder = "补充你的情况，或回答我们的问题。";
-      state.demoStep = 1;
-    }
     refs.messageInput.focus();
     scrollToMessageForm();
   }
@@ -905,30 +825,15 @@
     if (!refs.conversation || !refs.messageForm) return;
     const params = new URLSearchParams(location.search);
     const handoff = readSessionStorage(QA_HANDOFF_KEY) || {};
-    const mode = params.get("mode") || handoff.mode || "live";
-    const sessionId = params.get("session_id") || handoff.sessionId || null;
+    const requestedSessionId = params.get("session_id") || handoff.sessionId || null;
+    const sessionId = requestedSessionId === "local-demo" ? null : requestedSessionId;
     const resume = params.get("resume") === "1";
     const problem = String(handoff.problem || params.get("problem") || "").trim();
-    state.flowMode = mode;
-    state.sessionId = sessionId || (mode === "curated" ? "local-demo" : null);
+    state.flowMode = "live";
+    state.sessionId = sessionId;
     state.problemText = problem;
     refs.conversation.hidden = false;
     refs.conversation.classList.add("live-session-active");
-
-    if (mode === "curated") {
-      if (resume) {
-        appendMessage("user", problem || "我想继续回看刚才的问题。");
-        appendAssistantWithActions("你可以继续补充刚才没有说完的处境，或者直接写下一个想确认的细节。", []);
-        state.demoStep = 1;
-        if (handoff.prompt) refs.messageInput.value = handoff.prompt;
-        refs.messageInput.focus();
-      } else if (problem) {
-        await runDemoInitial(problem);
-      } else {
-        showError(Object.assign(new Error("missing question"), { code: "INVALID_REQUEST" }));
-      }
-      return;
-    }
 
     if (!sessionId || !problem) {
       showError(Object.assign(new Error("missing session handoff"), { code: "INVALID_REQUEST" }));
@@ -957,14 +862,16 @@
     if (!refs.results) return;
     const params = new URLSearchParams(location.search);
     const stored = readSessionStorage(QA_RESULT_KEY) || {};
-    const sessionId = params.get("session_id") || stored.sessionId || null;
+    const requestedSessionId = params.get("session_id") || stored.sessionId || null;
+    const sessionId = requestedSessionId === "local-demo" ? null : requestedSessionId;
     const storedMatchesSession = !sessionId || !stored.sessionId || String(stored.sessionId) === String(sessionId);
-    const storedResult = storedMatchesSession ? stored : {};
+    const isLegacyCuratedResult = params.get("mode") === "curated" || stored.mode === "curated" || requestedSessionId === "local-demo";
+    const storedResult = storedMatchesSession && !isLegacyCuratedResult ? stored : {};
     state.sessionId = sessionId;
-    state.flowMode = params.get("mode") || storedResult.mode || "live";
+    state.flowMode = "live";
     state.problemText = storedResult.problem || "";
     let answer = storedResult.answer || null;
-    if (!answer && sessionId && sessionId !== "local-demo") {
+    if (!answer && sessionId) {
       try {
         await ensureBackendReady();
         const session = await request(`/api/sessions/${encodeURIComponent(sessionId)}`);

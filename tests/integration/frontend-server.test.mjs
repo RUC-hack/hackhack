@@ -24,7 +24,7 @@ test("frontend server serves the main page, QA page, and local images", async (t
   assert.match(qaHtml, /有什么让你纠结了/u);
   assert.match(qaHtml, /href="journey\.css"/u);
   assert.match(qaHtml, /assets\/brand\/logo-mark\.svg/u);
-  assert.match(qaHtml, /demo\/curated-data\.js/u);
+  assert.doesNotMatch(qaHtml, /demo\/curated-data\.js/u);
   assert.match(qaHtml, /qa\.js/u);
 
   const session = await fetch(`http://127.0.0.1:${port}/qa-session.html`);
@@ -33,6 +33,7 @@ test("frontend server serves the main page, QA page, and local images", async (t
   assert.match(sessionHtml, /一段正在展开的对话/u);
   assert.match(sessionHtml, /qa-search-ritual/u);
   assert.match(sessionHtml, /qa-message-form/u);
+  assert.doesNotMatch(sessionHtml, /demo\/curated-data\.js/u);
 
   const results = await fetch(`http://127.0.0.1:${port}/qa-results.html`);
   assert.equal(results.status, 200);
@@ -41,16 +42,16 @@ test("frontend server serves the main page, QA page, and local images", async (t
   assert.match(resultsHtml, /JIANZHONG'S RESPONSE/u);
   assert.match(resultsHtml, /qa-answer-view/u);
   assert.match(resultsHtml, /PEOPLE IN THIS ANSWER/u);
+  assert.doesNotMatch(resultsHtml, /demo\/curated-data\.js/u);
+
+  const qaScript = await fetch(`http://127.0.0.1:${port}/qa.js`);
+  assert.equal(qaScript.status, 200);
+  const qaScriptText = await qaScript.text();
+  assert.doesNotMatch(qaScriptText, /shouldUseCuratedFlow|runDemoInitial|runDemoTurn|DEMO_ANSWER|DEMO_SOURCES/u);
 
   const journeyStyles = await fetch(`http://127.0.0.1:${port}/journey.css`);
   assert.equal(journeyStyles.status, 200);
   assert.match(await journeyStyles.text(), /\.journey-person-detail/u);
-
-  const curatedData = await fetch(`http://127.0.0.1:${port}/demo/curated-data.js`);
-  assert.equal(curatedData.status, 200);
-  const curatedText = await curatedData.text();
-  assert.match(curatedText, /JIANZHONG_CURATED_DATA/u);
-  assert.match(curatedText, /demo:zhihu:/u);
 
   const archivedFrontend = await fetch(`http://127.0.0.1:${port}/prototypes/frontend-a/index.html`);
   assert.equal(archivedFrontend.status, 200);

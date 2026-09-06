@@ -69,7 +69,7 @@
 ├── src/
 │   ├── qa.html / qa.js / qa.css    # 前端 B：唯一正式问答入口
 │   ├── journey.css                 # 从前端 A 提炼的正式结果组件
-│   ├── demo/curated-data.js        # 与实时链路隔离的精选演示数据
+│   ├── demo/curated-data.js        # 历史精选演示数据归档，不参与生产运行
 │   ├── prototypes/frontend-a/      # 前端 A：完整可运行归档
 │   └── server/                     # 会话、DeepSeek、知乎与来源服务
 ├── logs/
@@ -78,7 +78,7 @@
 └── zhihu-hackathon/                # 知乎 Skill、CLI 文档和 Demo 模板
 ```
 
-后端和前端 B 已按上述结构实现。正式问答页面只从后端 API 或明确标识的 curated 数据读取结果；归档的前端 A 不参与生产运行。
+后端和前端 B 已按上述结构实现。正式问答页面统一通过后端 API 完成会话、追问、知乎检索与回答；历史精选数据仅保留为归档，归档的前端 A 也不参与生产运行。
 
 ## 知乎接口
 
