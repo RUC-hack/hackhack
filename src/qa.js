@@ -5,6 +5,7 @@
   const pageKind = document.body?.dataset.qaPage || (location.pathname.endsWith("qa-results.html") ? "results" : location.pathname.endsWith("qa-session.html") ? "session" : "start");
   const QA_HANDOFF_KEY = "jianzhong.qa.handoff";
   const QA_RESULT_KEY = "jianzhong.qa.result";
+  const LONG_RESPONSE_FALLBACK_MS = 8_000;
   const state = {
     sessionId: null,
     busy: false,
@@ -18,6 +19,7 @@
     activeSourceId: null,
     flowMode: "live",
     problemText: "",
+    pendingWaitTimer: null,
   };
   const SAVED_SOURCES_KEY = "jianzhong.savedPeople";
   const $ = (selector) => document.querySelector(selector);
@@ -370,6 +372,24 @@
     return new Promise((resolve) => window.setTimeout(resolve, reducedMotion ? 420 : 3400));
   }
 
+  function armLongResponseFallback(mode) {
+    if (state.pendingWaitTimer) window.clearTimeout(state.pendingWaitTimer);
+    const limit = LONG_RESPONSE_FALLBACK_MS;
+    state.pendingWaitTimer = window.setTimeout(() => {
+      state.pendingWaitTimer = null;
+      if (!state.busy || refs.conversation?.classList.contains("is-searching")) return;
+      startSearchRitual(mode);
+      setStatus(mode === "retrieval" ? "这轮回答需要更久，正在寻找相似人生并整理参照…" : "这轮回答需要更久，正在继续整理…");
+    }, limit);
+    return limit;
+  }
+
+  function clearLongResponseFallback() {
+    if (!state.pendingWaitTimer) return;
+    window.clearTimeout(state.pendingWaitTimer);
+    state.pendingWaitTimer = null;
+  }
+
   function renderAnswerView(answer) {
     if (!refs.answerView) return;
     refs.answerSummary.textContent = answer?.summary || "我整理了一组可以回看的经验参照。";
@@ -706,12 +726,14 @@
     refs.messageForm.querySelector("button").disabled = true;
     const directAnswerRequest = /(?:直接回答|马上回答|立即回答|不用问|跳过|先回答)/u.test(message);
     const showRetrievalRitual = directAnswerRequest || (!initial && state.questionsAsked >= state.maxQuestions);
+    const delayedRitualMode = showRetrievalRitual || (!initial && state.questionsAsked >= Math.max(1, state.maxQuestions - 1)) ? "retrieval" : "understanding";
     if (showRetrievalRitual) {
       startSearchRitual("retrieval");
       setStatus("正在寻找相似人生并整理参照…");
     } else {
       setStatus(initial ? "正在听见你的问题…" : "正在记录这条补充…");
     }
+    armLongResponseFallback(delayedRitualMode);
     try {
       const result = await request(`/api/sessions/${encodeURIComponent(state.sessionId)}/messages`, {
         method: "POST",
@@ -722,6 +744,7 @@
       showError(error);
       setStatus("本轮没有完成，可以修改内容后再次发送。");
     } finally {
+      clearLongResponseFallback();
       stopSearchRitual();
       state.busy = false;
       refs.messageForm.querySelector("button").disabled = false;
@@ -766,6 +789,7 @@
       return;
     }
     stopSearchRitual();
+    clearLongResponseFallback();
     state.sessionId = null;
     state.busy = false;
     state.turn = 0;

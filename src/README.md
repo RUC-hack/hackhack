@@ -12,7 +12,7 @@ npm start
 
 启动后访问 `http://localhost:8080`，问答起始页为 `http://localhost:8080/qa.html`，后端健康检查为 `http://localhost:3000/api/health`。也可以分别运行 `npm run start:backend` 和 `npm run start:frontend`。
 
-问答流程拆成三个页面：`qa.html` 负责写下问题，`qa-session.html` 负责多轮对话，`qa-results.html` 负责展示路径、完整 AI 回答与知乎公开来源。所有问题统一进入实时后端链路，页面之间通过同一标签页的 `sessionStorage` 和 URL 中的 `session_id` 交接，因此刷新结果页仍可回到当前会话。旧的 `mode=curated` 参数不会再启用本地演示流程。
+问答流程拆成三个页面：`qa.html` 负责写下问题，`qa-session.html` 负责多轮对话，`qa-results.html` 负责展示路径、完整 AI 回答与知乎公开来源。所有问题统一进入实时后端链路，页面之间通过同一标签页的 `sessionStorage` 和 URL 中的 `session_id` 交接，因此刷新结果页仍可回到当前会话。旧的 `mode=curated` 参数不会再启用本地演示流程。对话请求超过 8 秒仍未返回时，前端会先切换到等待动画，但不会取消后端请求；请求完成后仍会正常进入结果页。
 
 如果只看静态策展页，直接双击 `index.html` 也可以演示；为避免浏览器对本地资源的限制，也可以在本目录运行：
 

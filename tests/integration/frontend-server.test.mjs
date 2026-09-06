@@ -48,6 +48,8 @@ test("frontend server serves the main page, QA page, and local images", async (t
   assert.equal(qaScript.status, 200);
   const qaScriptText = await qaScript.text();
   assert.doesNotMatch(qaScriptText, /shouldUseCuratedFlow|runDemoInitial|runDemoTurn|DEMO_ANSWER|DEMO_SOURCES/u);
+  assert.match(qaScriptText, /LONG_RESPONSE_FALLBACK_MS = 8_000/u);
+  assert.match(qaScriptText, /armLongResponseFallback/u);
 
   const journeyStyles = await fetch(`http://127.0.0.1:${port}/journey.css`);
   assert.equal(journeyStyles.status, 200);
