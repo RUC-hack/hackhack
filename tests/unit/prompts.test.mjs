@@ -43,6 +43,16 @@ test("decision and answer prompts expose the expanded round and citation budgets
   }), /每节最多引用 3 个 source_ids/u);
 });
 
+test("decision prompt prioritizes the lived dilemma over bundled profile questions", () => {
+  const prompt = buildDecisionPrompt({ max_questions: 4 });
+
+  assert.match(prompt, /正在经历的选择、想比较的维度、最担心的代价/u);
+  assert.match(prompt, /不要把学历、专业、年龄、城市、收入、家庭、伴侣等个人画像当作默认必填信息/u);
+  assert.match(prompt, /每次 action=ask 只能提出一个具体、容易回答的问题/u);
+  assert.match(prompt, /blocking_unknowns 最多列出一个缺口/u);
+  assert.match(prompt, /question\.suggestions.*2-3 个简短选项/u);
+});
+
 test("answer repair input is compacted while preserving source ids", () => {
   const value = {
     summary: "总结",

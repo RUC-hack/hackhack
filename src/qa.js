@@ -235,6 +235,22 @@
     return `<img class="${className}" src="assets/people/openpeeps/openpeeps${figure}.svg" width="120" height="160" alt="人生样本插画" loading="lazy" decoding="async">`;
   }
 
+  // 以来源 ID 做稳定映射：同一个知乎来源在路径卡、左侧人物栏和右侧详情中
+  // 始终使用同一个 OpenPeeps 形象，避免用户误以为是不同的人。
+  function figureIndexForSource(sourceId) {
+    const value = String(sourceId || "");
+    let hash = 2166136261;
+    for (const character of value) {
+      hash ^= character.codePointAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function figureMarkupForSourceId(sourceId, className) {
+    return figureMarkup(figureIndexForSource(sourceId), className);
+  }
+
   const ritualModes = {
     understanding: {
       eyebrow: "LISTENING TO YOUR QUESTION",
@@ -363,7 +379,7 @@
     return article;
   }
 
-  function waitForDemoRitual() {
+  function waitForRitual() {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     return new Promise((resolve) => window.setTimeout(resolve, reducedMotion ? 420 : 3400));
   }
@@ -404,7 +420,7 @@
     setDemoBusy(true);
     startSearchRitual("retrieval");
     setStatus("正在整理与你的问题有关的人生路径…");
-    await waitForDemoRitual();
+    await waitForRitual();
     stopSearchRitual();
     openResultsPage(DEMO_ANSWER);
     state.demoStep = 2;
@@ -563,12 +579,12 @@
 
   function renderPathList() {
     refs.pathList.innerHTML = state.matchedPaths.map((path, index) => {
-      const people = path.sources.length ? path.sources.slice(0, 3) : [null, null, null];
+      const people = path.sourceIds.slice(0, 3);
       const active = index === state.activePathIndex;
       return `<button class="journey-path" type="button" data-answer-path-index="${index}" aria-current="${active}">
         <span class="journey-path-number">${escapeHTML(path.number)}</span>
         <span class="journey-path-copy"><h3>${escapeHTML(path.title)} <span class="journey-viewed"${active ? "" : " hidden"}>VIEWED</span></h3><span class="journey-path-count">${path.sourceIds.length} 条知乎来源</span><p>${escapeHTML(path.excerpt)}</p></span>
-        <span class="journey-path-people" aria-hidden="true">${people.map((_, personIndex) => figureMarkup(index * 3 + personIndex, "qa-path-person")).join("")}</span>
+        <span class="journey-path-people" aria-hidden="true">${people.map((sourceId) => figureMarkupForSourceId(sourceId, "qa-path-person")).join("")}</span>
       </button>`;
     }).join("");
     refs.pathList.onclick = (event) => {
@@ -602,7 +618,7 @@
       const title = source.title || "一条知乎回答";
       const personLabel = source.content_type === "question" ? author : `Hi，我是${author}`;
       return `<button class="journey-person-select" type="button" role="option" data-answer-source-id="${escapeHTML(source.source_id)}" aria-selected="${source.source_id === state.activeSourceId || (!state.activeSourceId && index === 0)}">
-        ${figureMarkup(index, "qa-source-person")}
+        ${figureMarkupForSourceId(source.source_id, "qa-source-person")}
         <span><strong>${escapeHTML(personLabel)}</strong><span>${escapeHTML(title)}</span></span>
       </button>`;
     }).join("");
@@ -649,7 +665,7 @@
     const provenanceText = source.provider === "demo"
       ? "这里只保留一段有限摘要；点击入口可回到知乎查看公开页面与完整上下文。"
       : "来源已由后端保存，可通过原文入口回到知乎查看完整内容。";
-    refs.personDetail.innerHTML = `<header class="journey-person-identity"><div><p class="eyebrow">${sourceEyebrow}</p><h3><a href="${escapeHTML(authorUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(author)}</a></h3><p><a class="qa-source-title-link" href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(source.title || "打开这条知乎来源")}</a></p><p class="qa-source-meta">${sourceType}${votes}</p></div>${figureMarkup(source.source_id.length, "qa-detail-person")}</header>
+    refs.personDetail.innerHTML = `<header class="journey-person-identity"><div><p class="eyebrow">${sourceEyebrow}</p><h3><a href="${escapeHTML(authorUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(author)}</a></h3><p><a class="qa-source-title-link" href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(source.title || "打开这条知乎来源")}</a></p><p class="qa-source-meta">${sourceType}${votes}</p></div>${figureMarkupForSourceId(source.source_id, "qa-detail-person")}</header>
       <section class="journey-detail-section"><h4>这是谁的经验</h4><p>${escapeHTML(identity)}</p></section>
       <section class="journey-detail-section"><h4>${responseHeading}</h4><p class="qa-source-answer">${escapeHTML(source.summary || "知乎没有返回可展示的回答摘要。")}</p></section>
       <section class="journey-detail-section"><h4>为什么匹配到这里</h4><ul class="journey-match-reasons">${reasons.map((reason) => `<li>${escapeHTML(reason)}</li>`).join("")}</ul></section>
@@ -713,7 +729,7 @@
     window.requestAnimationFrame(() => refs.results.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
 
-  function renderTurn(result) {
+  async function renderTurn(result) {
     setStatus(result.state ? `当前状态：${result.state}` : "");
     if (result.action === "ask") {
       state.questionsAsked += 1;
@@ -731,6 +747,11 @@
       return;
     }
     if (result.action === "respond") {
+      // 只有所有追问结束、后端已经拿到最终回答后，才展示“寻找相似人生”过渡。
+      // 这样普通追问不会反复进入加载页，同时在线检索和回答也有完整的视觉收束。
+      startSearchRitual("retrieval");
+      setStatus("正在寻找相似人生并整理参照…");
+      await waitForRitual();
       openResultsPage(result.answer);
       return;
     }
@@ -763,7 +784,7 @@
         method: "POST",
         body: JSON.stringify({ message, client_turn_id: makeTurnId() }),
       }, { timeoutMs: 190_000 });
-      renderTurn(result);
+      await renderTurn(result);
     } catch (error) {
       showError(error);
       setStatus("本轮没有完成，可以修改内容后再次发送。");

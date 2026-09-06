@@ -2,9 +2,9 @@
 .qa-workspace{transition:opacity .35s ease,transform .35s ease,visibility .35s ease}.qa-workspace.is-exiting{opacity:0;transform:translateY(-18px);visibility:hidden;pointer-events:none}.qa-workspace.session-started{display:none}
 
 /* QA 的回答结果沿用 paths.html 的“路径 → 人物 → 原文”叙事层级。 */
-.qa-results{background:#fff;overflow:clip}.qa-results[hidden]{display:none!important}.qa-results-hero{position:relative;isolation:isolate;background:var(--primary);color:#fff;padding:clamp(126px,16vh,190px) 0 clamp(92px,11vw,150px);overflow:hidden}.qa-results-hero:after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 82% 24%,rgba(214,201,175,.16),transparent 30%),linear-gradient(110deg,rgba(10,26,21,.7),rgba(23,61,53,.08))}.qa-results-hero .eyebrow{color:#d9c3a8}.qa-results-hero h2{max-width:1120px;margin:0;font:600 clamp(40px,5.4vw,78px)/1.35 var(--serif);letter-spacing:-.045em;overflow-wrap:anywhere}.qa-results-hero h2 span{color:#d9c3a8}.qa-results-hero .journey-results-intro{max-width:670px;margin:42px 0 0 auto;padding-left:22px;border-left-color:#d9c3a8;color:rgba(255,255,255,.68)}.qa-results-paths{background:#f4f5f2}.qa-results-paths .journey-path-copy p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.qa-results-paths .journey-path-count{letter-spacing:.1em}.qa-path-person,.qa-source-person,.qa-detail-person{display:block;overflow:visible}.qa-path-person{width:clamp(68px,7vw,102px);height:clamp(76px,7vw,112px);margin-left:-12px;filter:grayscale(1);transition:.4s}.journey-path:hover .qa-path-person,.journey-path[aria-current="true"] .qa-path-person{transform:translateY(-4px);filter:grayscale(.2)}.qa-source-person{width:68px;height:78px;flex:0 0 auto;filter:grayscale(1);transition:.3s}.journey-person-select:hover .qa-source-person,.journey-person-select[aria-selected="true"] .qa-source-person{filter:grayscale(.12);transform:translateY(-2px)}.qa-detail-person{width:120px;height:140px;filter:grayscale(.35)}.qa-source-title-link{color:var(--primary);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}.qa-source-meta{margin-top:10px!important;color:var(--muted)!important;font-size:11px!important;letter-spacing:.08em}.qa-source-answer{white-space:pre-wrap;overflow-wrap:anywhere}.qa-results .journey-person-detail{min-height:640px}.qa-results-loading,.qa-person-empty{margin:24px 0;color:var(--muted);font-size:13px}.qa-person-empty h3{font:600 clamp(30px,3vw,44px) var(--serif);margin:0 0 12px;color:var(--primary)}.qa-person-empty p:last-child{max-width:460px}.qa-results.is-visible .qa-results-hero,.qa-results.is-visible .qa-results-paths,.qa-results.is-visible .qa-results-people{animation:qa-results-rise .65s cubic-bezier(.22,1,.36,1) both}.qa-results.is-visible .qa-results-paths{animation-delay:.08s}.qa-results.is-visible .qa-results-people{animation-delay:.16s}@keyframes qa-results-rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.qa-results{background:#fff;overflow:clip}.qa-results[hidden]{display:none!important}.qa-results-hero{position:relative;isolation:isolate;background:var(--primary);color:#fff;padding:clamp(126px,16vh,190px) 0 clamp(92px,11vw,150px);overflow:hidden}.qa-results-hero:after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 82% 24%,rgba(214,201,175,.16),transparent 30%),linear-gradient(110deg,rgba(10,26,21,.7),rgba(23,61,53,.08))}.qa-results-hero .eyebrow{color:#d9c3a8}.qa-results-hero h1{max-width:1120px;margin:0;font:600 clamp(40px,5.4vw,78px)/1.35 var(--serif);letter-spacing:-.045em;overflow-wrap:anywhere}.qa-results-hero h1 span{color:#d9c3a8}.qa-results-hero .journey-results-intro{max-width:670px;margin:42px 0 0 auto;padding-left:22px;border-left-color:#d9c3a8;color:rgba(255,255,255,.68)}.qa-results-paths{background:#f4f5f2}.qa-results-paths .journey-path-copy p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.qa-results-paths .journey-path-count{letter-spacing:.1em}.qa-path-person,.qa-source-person,.qa-detail-person{display:block;overflow:visible}.qa-path-person{width:clamp(68px,7vw,102px);height:clamp(76px,7vw,112px);margin-left:-12px;filter:grayscale(1);transition:.4s}.journey-path:hover .qa-path-person,.journey-path[aria-current="true"] .qa-path-person{transform:translateY(-4px);filter:grayscale(.2)}.qa-source-person{width:68px;height:78px;flex:0 0 auto;filter:grayscale(1);transition:.3s}.journey-person-select:hover .qa-source-person,.journey-person-select[aria-selected="true"] .qa-source-person{filter:grayscale(.12);transform:translateY(-2px)}.qa-detail-person{width:120px;height:140px;filter:grayscale(.35)}.qa-source-title-link{color:var(--primary);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}.qa-source-meta{margin-top:10px!important;color:var(--muted)!important;font-size:11px!important;letter-spacing:.08em}.qa-source-answer{white-space:pre-wrap;overflow-wrap:anywhere}.qa-results .journey-person-detail{min-height:640px}.qa-results-loading,.qa-person-empty{margin:24px 0;color:var(--muted);font-size:13px}.qa-person-empty h3{font:600 clamp(30px,3vw,44px) var(--serif);margin:0 0 12px;color:var(--primary)}.qa-person-empty p:last-child{max-width:460px}.qa-results.is-visible .qa-results-hero,.qa-results.is-visible .qa-results-paths,.qa-results.is-visible .qa-results-people{animation:qa-results-rise .65s cubic-bezier(.22,1,.36,1) both}.qa-results.is-visible .qa-results-paths{animation-delay:.08s}.qa-results.is-visible .qa-results-people{animation-delay:.16s}@keyframes qa-results-rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 @media(max-width:900px){.qa-results-hero{padding-top:108px}.qa-results .journey-people-layout{gap:50px}.qa-results .journey-person-detail{position:relative;top:auto}.qa-results .journey-path{grid-template-columns:12% 58% 30%}}
-@media(max-width:600px){.qa-results-hero{padding:105px 0 86px}.qa-results-hero h2{font-size:38px}.qa-results-hero .journey-results-intro{margin-top:32px}.qa-results-paths,.qa-results-people{padding:85px 0}.qa-results .journey-path{grid-template-columns:50px 1fr;padding:28px 0}.qa-results .journey-path:hover,.qa-results .journey-path[aria-current="true"]{padding-left:12px;padding-right:12px}.qa-results .journey-path-people{grid-column:2;justify-content:flex-start;padding:22px 0 0 8px}.qa-results .journey-path-copy{padding:0}.qa-results .journey-people-layout{gap:32px}.qa-results .journey-person-detail{padding:28px 20px}.qa-detail-person{width:84px;height:100px}}
+@media(max-width:600px){.qa-results-hero{padding:105px 0 86px}.qa-results-hero h1{font-size:38px}.qa-results-hero .journey-results-intro{margin-top:32px}.qa-results-paths,.qa-results-people{padding:85px 0}.qa-results .journey-path{grid-template-columns:50px 1fr;padding:28px 0}.qa-results .journey-path:hover,.qa-results .journey-path[aria-current="true"]{padding-left:12px;padding-right:12px}.qa-results .journey-path-people{grid-column:2;justify-content:flex-start;padding:22px 0 0 8px}.qa-results .journey-path-copy{padding:0}.qa-results .journey-people-layout{gap:32px}.qa-results .journey-person-detail{padding:28px 20px}.qa-detail-person{width:84px;height:100px}}
 @media(prefers-reduced-motion:reduce){.qa-results.is-visible .qa-results-hero,.qa-results.is-visible .qa-results-paths,.qa-results.is-visible .qa-results-people{animation:none}}
 
 /* 页面之间用同一张纸面完成淡入淡出，避免把三段流程堆成一张长页面。 */
@@ -239,4 +239,48 @@
   .qa-page .qa-message-form{margin-top:32px}
   .qa-page .qa-conversation.is-searching .qa-search-ritual{min-height:calc(100svh - 72px);padding:104px 18px 205px}
   .qa-page .qa-conversation.is-searching .qa-search-copy{width:100%}
+}
+
+/* 统一 QA 的字阶与人物插画比例，避免结果页混入旧版规则后出现视觉跳变。 */
+.qa-page h1,
+.qa-page h2,
+.qa-page h3,
+.qa-page h4,
+.qa-page .qa-start-card textarea,
+.qa-page .qa-search-ritual h2,
+.qa-page .qa-answer-summary,
+.qa-page .qa-answer-block h3,
+.qa-page .journey-path-copy h3,
+.qa-page .journey-person-select strong,
+.qa-page .journey-person-identity h3 {
+  font-family: var(--serif);
+}
+.qa-page .qa-intro-copy h1{font-size:clamp(48px,5.8vw,86px);line-height:1.2;font-weight:600;letter-spacing:-.05em}
+.qa-page .qa-start-card textarea{font-size:clamp(20px,2vw,29px);line-height:1.9;font-weight:400}
+.qa-page .qa-message p{font-size:15px;line-height:1.85}
+.qa-page .qa-path-person,
+.qa-page .qa-source-person,
+.qa-page .qa-detail-person{
+  display:block;
+  object-fit:contain;
+  object-position:center bottom;
+  filter:grayscale(.18) sepia(.06);
+}
+.qa-page .qa-path-person{width:clamp(68px,7vw,102px);height:clamp(92px,9vw,128px);margin-left:-12px}
+.qa-page .qa-source-person{width:68px;height:92px;flex:0 0 auto}
+.qa-page .qa-detail-person{width:120px;height:150px}
+.qa-page .journey-path-people{align-items:flex-end;min-height:128px}
+.qa-page .journey-person-select:hover .qa-source-person,
+.qa-page .journey-person-select[aria-selected="true"] .qa-source-person,
+.qa-page .journey-path:hover .qa-path-person,
+.qa-page .journey-path[aria-current="true"] .qa-path-person{filter:grayscale(.05) sepia(.08)}
+.qa-people-heading-row{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+.qa-back-to-paths{display:inline-flex;align-items:center;min-height:38px;padding:4px 0;border-bottom:1px solid var(--primary);color:var(--primary);font-size:12px;white-space:nowrap;transition:color .25s,border-color .25s,transform .25s}
+.qa-back-to-paths:hover{color:var(--accent);border-color:var(--accent);transform:translateY(-2px)}
+@media(max-width:900px){.qa-page .qa-intro-copy h1{font-size:clamp(48px,9vw,74px)}}
+@media(max-width:600px){
+  .qa-people-heading-row{align-items:flex-start;flex-direction:column;gap:18px}
+  .qa-page .qa-intro-copy h1{font-size:43px}
+  .qa-page .qa-start-card textarea{font-size:19px}
+  .qa-page .qa-detail-person{width:92px;height:116px}
 }
