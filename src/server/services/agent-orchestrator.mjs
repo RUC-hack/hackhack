@@ -143,7 +143,9 @@ export class AgentOrchestrator {
     const appended = await this.sessionService.appendUserMessage(sessionId, {
       text,
       clientTurnId,
-      updateProblemStatement: safety.preserve_context !== false,
+      // 先把消息交给模型做边界判断；只有模型允许进入主流程后，才提交
+      // current_understanding，避免被判为 safety 的内容污染问题陈述。
+      updateProblemStatement: false,
     });
     session = appended.session;
     const message = appended.message;
@@ -232,13 +234,7 @@ export class AgentOrchestrator {
     }
 
     const previousProblem = session.current_understanding.problem_statement;
-    if (!previousProblem) session.current_understanding.problem_statement = text;
-    if (previousProblem && previousProblem !== session.current_understanding.problem_statement) {
-      session.context_version += 1;
-      for (const retrieval of session.retrievals) {
-        if (retrieval.context_version !== session.context_version && retrieval.status !== "stale") retrieval.status = "stale";
-      }
-    }
+    const previousContextItems = session.current_understanding.context_items.slice();
     session.current_understanding.context_items.push({
       label: "用户当前表达",
       value: text,
@@ -253,6 +249,7 @@ export class AgentOrchestrator {
     try {
       decision = assertAgentDecision(await this.llmGateway.decideNextAction(publicSessionView(session), { signal, requestId, metrics: llmMetrics }));
     } catch (error) {
+      session.current_understanding.context_items = previousContextItems;
       this.#setStatus(session, "FAILED_RECOVERABLE");
       await this.sessionService.save(session);
       await this.#log({ event_type: "orchestrator_failed", request_id: requestId, session_id: sessionId, stage: "decision", error_code: error.code ?? "LLM_INVALID_RESPONSE", latency_ms: Math.max(0, Math.round(performance.now() - startedAt)), llm_metrics: summarizeLlmMetrics(llmMetrics) });
@@ -278,6 +275,12 @@ export class AgentOrchestrator {
         action: "retrieve",
         query_count: decision.queries.length,
       });
+    }
+    if (decision.action === "safety") {
+      // raw_messages 保留用于审计，但不让模型判定为越界的内容进入当前问题上下文。
+      session.current_understanding.context_items = previousContextItems;
+    } else if (!previousProblem) {
+      session.current_understanding.problem_statement = text;
     }
     session.current_understanding.blocking_unknowns = clone(decision.blocking_unknowns ?? []);
     session.current_understanding.assumptions = clone(decision.assumptions ?? []);
